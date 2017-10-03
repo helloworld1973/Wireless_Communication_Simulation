@@ -8,5 +8,5 @@ simple MAC
 		double backoffDistribution;// distribution for random backoff period
 	gates:
 		input in;
-		inout gate;
+		inout out;
 }
