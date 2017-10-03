@@ -1,12 +1,12 @@
 #
-# OMNeT++/OMNEST Makefile for Wireless Communication
+# OMNeT++/OMNEST Makefile for Wireless_Communication_Simulation
 #
 # This file was generated with the command:
 #  opp_makemake -f --deep
 #
 
 # Name of target to be created (-o option)
-TARGET = Wireless Communication$(EXE_SUFFIX)
+TARGET = Wireless_Communication_Simulation$(EXE_SUFFIX)
 
 # User interface (uncomment one) (-u option)
 USERIF_LIBS = $(ALL_ENV_LIBS) # that is, $(TKENV_LIBS) $(QTENV_LIBS) $(CMDENV_LIBS)
@@ -29,7 +29,7 @@ PROJECTRELATIVE_PATH = src
 O = $(PROJECT_OUTPUT_DIR)/$(CONFIGNAME)/$(PROJECTRELATIVE_PATH)
 
 # Object files for local .cc, .msg and .sm files
-OBJS =
+OBJS = $O/txc1.o
 
 # Message files
 MSGFILES =
@@ -114,7 +114,7 @@ smheaders: $(SMFILES:.sm=_sm.h)
 clean:
 	$(qecho) Cleaning...
 	$(Q)-rm -rf $O
-	$(Q)-rm -f Wireless Communication Wireless Communication.exe libWireless Communication.so libWireless Communication.a libWireless Communication.dll libWireless Communication.dylib
+	$(Q)-rm -f Wireless_Communication_Simulation Wireless_Communication_Simulation.exe libWireless_Communication_Simulation.so libWireless_Communication_Simulation.a libWireless_Communication_Simulation.dll libWireless_Communication_Simulation.dylib
 	$(Q)-rm -f ./*_m.cc ./*_m.h ./*_sm.cc ./*_sm.h
 
 cleanall: clean
@@ -125,4 +125,5 @@ depend:
 	$(Q)$(MAKEDEPEND) $(INCLUDE_PATH) -f Makefile -P\$$O/ -- $(MSG_CC_FILES) $(SM_CC_FILES)  ./*.cc
 
 # DO NOT DELETE THIS LINE -- make depend depends on it.
+$O/txc1.o: txc1.cc
 
