@@ -5,6 +5,6 @@ simple MAC
 		int maxBackoffs;// maximum backoff counts
 		double backoffDistribution;// distribution for random backoff period
 	gates:
-		input in;
-		inout out;
+        inout gateForPacket;
+		inout gateForTX;
 }

@@ -9,6 +9,6 @@ simple Transceiver
 		int csTime;// time required to carry out carrier sensing operation
 	gates:
 		inout gateForMAC;
-		inout gateForChnl;// output out;
+		inout gateForTXNode;
 		
 }
