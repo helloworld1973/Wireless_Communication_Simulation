@@ -1,0 +1,4 @@
+packet CSResponseMessage
+{
+    bool busyChannel;
+}

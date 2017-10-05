@@ -1,0 +1,4 @@
+packet TransmissionConfirmMessage
+{
+    string status;
+}

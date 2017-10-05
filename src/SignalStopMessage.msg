@@ -1,0 +1,4 @@
+packet SignalStopMessage extends SignalMessage
+{
+
+}

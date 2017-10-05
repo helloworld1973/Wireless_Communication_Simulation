@@ -1,0 +1,4 @@
+packet SignalMessage
+{
+    int identifier;
+}
