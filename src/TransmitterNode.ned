@@ -13,5 +13,5 @@ module TransmitterNode
     connections:
         PacketGeneratorModule.gate <--> MACModule.gateForPacket;
         MACModule.gateForTX <--> TransceiverModule.gateForMAC;
-        TransceiverModule.gateForTXRXNode <--> gateForChnl;      
+        TransceiverModule.gateForTXRXNode <--> gateForChnl;    
 }

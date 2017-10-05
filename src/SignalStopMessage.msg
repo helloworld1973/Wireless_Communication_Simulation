@@ -1,4 +1,4 @@
-packet SignalStopMessage extends SignalMessage
+packet SignalStopMessage
 {
-
+  int identifier;
 }

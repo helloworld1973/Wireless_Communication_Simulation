@@ -29,10 +29,29 @@ PROJECTRELATIVE_PATH = src
 O = $(PROJECT_OUTPUT_DIR)/$(CONFIGNAME)/$(PROJECTRELATIVE_PATH)
 
 # Object files for local .cc, .msg and .sm files
-OBJS = $O/txc1.o
+OBJS = \
+    $O/Channel.o \
+    $O/MAC.o \
+    $O/PacketGenerator.o \
+    $O/PacketSink.o \
+    $O/Transceiver.o \
+    $O/AppMessage_m.o \
+    $O/CSRequestMessage_m.o \
+    $O/CSResponseMessage_m.o \
+    $O/SignalStartMessage_m.o \
+    $O/SignalStopMessage_m.o \
+    $O/TransmissionConfirmMessage_m.o \
+    $O/TransmissionRequestMessage_m.o
 
 # Message files
-MSGFILES =
+MSGFILES = \
+    AppMessage.msg \
+    CSRequestMessage.msg \
+    CSResponseMessage.msg \
+    SignalStartMessage.msg \
+    SignalStopMessage.msg \
+    TransmissionConfirmMessage.msg \
+    TransmissionRequestMessage.msg
 
 # SM files
 SMFILES =
@@ -125,5 +144,32 @@ depend:
 	$(Q)$(MAKEDEPEND) $(INCLUDE_PATH) -f Makefile -P\$$O/ -- $(MSG_CC_FILES) $(SM_CC_FILES)  ./*.cc
 
 # DO NOT DELETE THIS LINE -- make depend depends on it.
-$O/txc1.o: txc1.cc
+$O/AppMessage_m.o: AppMessage_m.cc \
+	AppMessage_m.h
+$O/CSRequestMessage_m.o: CSRequestMessage_m.cc \
+	CSRequestMessage_m.h
+$O/CSResponseMessage_m.o: CSResponseMessage_m.cc \
+	CSResponseMessage_m.h
+$O/Channel.o: Channel.cc
+$O/MAC.o: MAC.cc \
+	AppMessage_m.h
+$O/PacketGenerator.o: PacketGenerator.cc \
+	AppMessage_m.h
+$O/PacketSink.o: PacketSink.cc
+$O/SignalStartMessage_m.o: SignalStartMessage_m.cc \
+	SignalStartMessage_m.h
+$O/SignalStopMessage_m.o: SignalStopMessage_m.cc \
+	SignalStopMessage_m.h
+$O/Transceiver.o: Transceiver.cc \
+	AppMessage_m.h \
+	CSRequestMessage_m.h \
+	CSResponseMessage_m.h \
+	SignalStartMessage_m.h \
+	SignalStopMessage_m.h \
+	TransmissionConfirmMessage_m.h \
+	TransmissionRequestMessage_m.h
+$O/TransmissionConfirmMessage_m.o: TransmissionConfirmMessage_m.cc \
+	TransmissionConfirmMessage_m.h
+$O/TransmissionRequestMessage_m.o: TransmissionRequestMessage_m.cc \
+	TransmissionRequestMessage_m.h
 

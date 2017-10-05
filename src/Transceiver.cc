@@ -1,8 +1,19 @@
 #include <omnetpp.h>
 #include <stdio.h>
 #include <string.h>
+#include <cmath>
+#include <ctgmath>
 #include <iostream>
+#include <vector>
 using namespace omnetpp;
+
+#include "AppMessage_m.h"
+#include "CSRequestMessage_m.h"
+#include "CSResponseMessage_m.h"
+#include "TransmissionRequestMessage_m.h"
+#include "TransmissionConfirmMessage_m.h"
+#include "SignalStartMessage_m.h"
+#include "SignalStopMessage_m.h"
 
 class Transceiver : public cSimpleModule
 {

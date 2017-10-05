@@ -1,4 +1,0 @@
-packet SignalMessage
-{
-    int identifier;
-}

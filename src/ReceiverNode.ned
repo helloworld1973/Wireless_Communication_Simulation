@@ -10,7 +10,7 @@ module ReceiverNode
 		PacketSinkModule: PacketSink;
         MACModule: MAC;
         TransceiverModule: Transceiver;    
-    connections:
+    connections allowunconnected:
         PacketSinkModule.in <-- MACModule.gateForPacket$o;
         MACModule.gateForTX <--> TransceiverModule.gateForMAC;
         

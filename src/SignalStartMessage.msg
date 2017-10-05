@@ -1,5 +1,7 @@
-packet SignalStartMessage extends SignalMessage
+packet SignalStartMessage
 {
+    int identifier;
+    
     int transmitPowerDBm;
     
     int positionX;
