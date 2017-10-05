@@ -20,7 +20,6 @@ protected:
 Define_Module(PacketSink);
 
 PacketSink::PacketSink()
-    : cSimpleModule()
 {
 
 }

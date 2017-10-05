@@ -28,7 +28,7 @@ class MAC : public cSimpleModule
 
 Define_Module(MAC);
 
-MAC::MAC(): cSimpleModule()
+MAC::MAC()
 {
 
 }

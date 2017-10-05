@@ -13,15 +13,9 @@ class Transceiver : public cSimpleModule
     protected:
         typedef enum
         {
-            IDLE = 0,
-
-            RX_DONE,
-            RX_TIMEOUT,
-            RX_ERROR,
-
-            TX_DONE,
-            TX_TIMEOUT,
-        } TransceiverState_t;
+            RX,
+            TX
+        } TransceiverState_t;//finite state machine
 
         virtual void initialize();
         virtual void handleMessage(cMessage *msg);
@@ -34,7 +28,7 @@ class Transceiver : public cSimpleModule
         int csTime;
 
         TransceiverState_t transceiverState;
-        int currentTransmissions;
+        std::vector<SignalStartMessage *> currentTransmissions;
 };
 
 Define_Module(Transceiver);
@@ -46,7 +40,11 @@ Transceiver::Transceiver()
 
 Transceiver::~Transceiver()
 {
-    // take parameters
+
+}
+
+void Transceiver::initialize()
+{
     txPowerDBm = par("txPowerDBm");
     bitRate = par("bitRate");
     csThreshDBm = par("csThreshDBm");
@@ -54,12 +52,8 @@ Transceiver::~Transceiver()
     turnaroundTime = par("turnaroundTime");
     csTime = par("csTime");
 
-    // initialize internal variable
-    transceiverState = IDLE;
-}
 
-void Transceiver::initialize()
-{
+    transceiverState = RX;
 
 }
 

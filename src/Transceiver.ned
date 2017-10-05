@@ -5,9 +5,10 @@ simple Transceiver
 		int bitRate;// bit rate
 		int csThreshDBm;// carrier sensing threshold
 		int noisePowerDBm;// the power of noise
-		int turnaroundTime;// turn around time
+		int turnaroundTime;// transmit state <-> receive state
 		int csTime;// time required to carry out carrier sensing operation
 	gates:
-		inout gate;// output out;
+		inout gateForMAC;
+		inout gateForChnl;// output out;
 		
 }
