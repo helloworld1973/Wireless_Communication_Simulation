@@ -7,7 +7,7 @@ module TransmitterNode
     submodules:
         PacketGeneratorModule: PacketGenerator;
         MACModule: MAC;
-        TransceiverModule: Transceiver;  
+        TransceiverModule: Transceiver;
     connections:
             
     gates:
