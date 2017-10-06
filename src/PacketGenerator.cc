@@ -26,7 +26,8 @@ class PacketGenerator : public cSimpleModule
 Define_Module(PacketGenerator);
 
 PacketGenerator::PacketGenerator()
-{}
+{
+}
 
 PacketGenerator::~PacketGenerator()
 {
@@ -34,10 +35,10 @@ PacketGenerator::~PacketGenerator()
 
 void PacketGenerator::initialize()
 {
-    seqno = 0;
-
     iatDistribution = par("iatDistribution");
     messageSize = par("messageSize");
+
+    seqno = 0;//local variable in each packet generator
 
     senderId = getParentModule()->par("nodeIdentifier");//from TransmitterNode's identifier
 
@@ -59,7 +60,6 @@ void PacketGenerator::handleMessage(cMessage *msg)
             send(appMsg, "gate$o");// send the message
             scheduleAt(simTime() + iatDistribution, new cMessage("SCHEDULE"));// schedule the next transmission
         }
-
         delete msg;
     }
 }
@@ -72,9 +72,8 @@ AppMessage *PacketGenerator::generateMessage()
 
     int msgSize = messageSize;
 
-    char msgname[32];
+    char msgname[32];// generate message name include info
     snprintf(msgname, 32, "sender=%d seq=%d ts=%f", senderId, sequenceNumber, timeStamp.dbl());
-    // generate message name include info.
 
     AppMessage * msg = new AppMessage(msgname);
 

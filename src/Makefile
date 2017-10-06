@@ -38,9 +38,11 @@ OBJS = \
     $O/AppMessage_m.o \
     $O/CSRequestMessage_m.o \
     $O/CSResponseMessage_m.o \
+    $O/MacMessage_m.o \
     $O/SignalStartMessage_m.o \
     $O/SignalStopMessage_m.o \
     $O/TransmissionConfirmMessage_m.o \
+    $O/TransmissionHigherLayerMessage_m.o \
     $O/TransmissionRequestMessage_m.o
 
 # Message files
@@ -48,9 +50,11 @@ MSGFILES = \
     AppMessage.msg \
     CSRequestMessage.msg \
     CSResponseMessage.msg \
+    MacMessage.msg \
     SignalStartMessage.msg \
     SignalStopMessage.msg \
     TransmissionConfirmMessage.msg \
+    TransmissionHigherLayerMessage.msg \
     TransmissionRequestMessage.msg
 
 # SM files
@@ -152,7 +156,15 @@ $O/CSResponseMessage_m.o: CSResponseMessage_m.cc \
 	CSResponseMessage_m.h
 $O/Channel.o: Channel.cc
 $O/MAC.o: MAC.cc \
-	AppMessage_m.h
+	AppMessage_m.h \
+	CSRequestMessage_m.h \
+	CSResponseMessage_m.h \
+	MacMessage_m.h \
+	TransmissionConfirmMessage_m.h \
+	TransmissionHigherLayerMessage_m.h \
+	TransmissionRequestMessage_m.h
+$O/MacMessage_m.o: MacMessage_m.cc \
+	MacMessage_m.h
 $O/PacketGenerator.o: PacketGenerator.cc \
 	AppMessage_m.h
 $O/PacketSink.o: PacketSink.cc
@@ -170,6 +182,8 @@ $O/Transceiver.o: Transceiver.cc \
 	TransmissionRequestMessage_m.h
 $O/TransmissionConfirmMessage_m.o: TransmissionConfirmMessage_m.cc \
 	TransmissionConfirmMessage_m.h
+$O/TransmissionHigherLayerMessage_m.o: TransmissionHigherLayerMessage_m.cc \
+	TransmissionHigherLayerMessage_m.h
 $O/TransmissionRequestMessage_m.o: TransmissionRequestMessage_m.cc \
 	TransmissionRequestMessage_m.h
 
