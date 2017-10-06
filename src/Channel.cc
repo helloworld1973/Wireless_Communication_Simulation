@@ -1,4 +1,9 @@
 #include <iostream>
+#include <omnetpp.h>
+#include "SignalStartMessage_m.h"
+#include "SignalStopMessage_m.h"
+
+using namespace omnetpp;
 
 class Channel : public cSimpleModule
 {
