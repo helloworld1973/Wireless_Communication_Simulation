@@ -206,5 +206,7 @@ void MAC::handleMessage(cMessage *msg)
             delete appMsg;
             MACState = IDLE;
         }
+        case CARRIER_SENSE_WAIT:break;
+        case TRANSMIT_WAIT:break;
     }
 }
