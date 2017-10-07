@@ -1,6 +1,6 @@
 #include <omnetpp.h>
 #include <stdio.h>
-#include <vector>
+#include <deque>
 #include <string.h>
 #include <iostream>
 using namespace omnetpp;
@@ -15,42 +15,40 @@ using namespace omnetpp;
 
 class MAC : public cSimpleModule
 {
-public:
-    MAC();
-    ~MAC();
+    public:
+        MAC();
+        ~MAC();
 
-protected:
-    virtual void initialize();
-    virtual void handleMessage(cMessage *msg);
+    protected:
+        virtual void initialize();
+        virtual void handleMessage(cMessage *msg);
 
-    typedef enum
-    {
-        IDLE = 0,
-        CARRIER_SENSE_RETRY,
-        CARRIER_SENSE_WAIT,
-        TRANSMIT_START,
-        TRANSMIT_WAIT,
-        TRANSMIT_DONE
-    } MACState_t;//treat MAC as a finite state machine as well
+        typedef enum
+        {
+            IDLE,
+            CARRIER_SENSE_RETRY,
+            CARRIER_SENSE_WAIT,
+            TRANSMIT_START,
+            TRANSMIT_WAIT,
+            TRANSMIT_DONE
+        } MACState_t;//treat MAC as a finite state machine as well
 
-    MACState_t MACState;
-    int bufferSize;
-    int maxBackoffs;
-    double backoffDistribution;
+        MACState_t MACState;
+        int bufferSize;
+        int maxBackoffs;
+        double backoffDistribution;
 
-    std::vector<AppMessage> macBuffer;
-    int backoffCounter;//local variable
+        std::deque<AppMessage *> macBuffer;
+        int backoffCounter;//local variable
 };
 Define_Module(MAC);
 
 MAC::MAC()
 {
-
 }
 
 MAC::~MAC()
 {
-
 }
 
 void MAC::initialize()
@@ -69,9 +67,9 @@ void MAC::handleMessage(cMessage *msg)
 {
     //check the type of the message if the received packet is from Packet Generator
     //if it is nullptr, check_and_cast raises an OMNeT++ error. Using check_and_cast saves you from writing error checking code
-    if (dynamic_cast<AppMessage *>(msg))
+    if (check_and_cast<AppMessage *>(msg))
     {
-        AppMessage *appMsg = msg;
+        AppMessage *appMsg = static_cast<AppMessage *>(msg);
 
         // add packet in the end of macBuffer,  if the buffer is full, then drop the packet
         if (macBuffer.size() == bufferSize)
@@ -86,40 +84,32 @@ void MAC::handleMessage(cMessage *msg)
 
 
     // received carrier sensing response packet
-    else if (dynamic_cast<CSResponseMessage *>(msg))
+    else if (check_and_cast<CSResponseMessage *>(msg))
     {
-        CSResponseMessage *csMsg = msg;
+        CSResponseMessage *csMsg = static_cast<CSResponseMessage *>(msg);
 
         if (csMsg->getBusyChannel())//the channel is busy
         {
-            // increase the backoffCounter
             backoffCounter++;
 
-            // std::cout << "Retry:" << backoffCounter << std::endl;
-
-            // test if the counter has reached the maximum value
-            if (backoffCounter < maxBackoffs)
+            if (backoffCounter < maxBackoffs)//still can do carrier sense retry
             {
-                // wait for a random time
-                // schedule next event
-                // send a dummy packet to itself
-                scheduleAt(simTime() + backoffDistribution, new cMessage("CSMA_FAILED"));
+                // wait for a random time for next carrier sense
+                scheduleAt(simTime() + backoffDistribution, new cMessage("CARRIER_SENSE_WAIT"));
 
-                // wait for response
-                MACState = CARRIER_SENSE_WAIT;
+                MACState = CARRIER_SENSE_WAIT;//reset the state
             }
-            else
+            else//reach the max carrier sense retry times
             {
-                // cancel the schedule for current packet transmission
                 AppMessage *appMsg = macBuffer.front();
                 macBuffer.pop_front();
-                delete appMsg;
+                delete appMsg;//drop the current AppMessage
 
                 // cancel the current transmission
                 MACState = IDLE;
             }
         }
-        else//the carrier is idle,so transmit immediately
+        else//the carrier is idle, transmit
         {
             MACState = TRANSMIT_START;
         }
@@ -128,9 +118,9 @@ void MAC::handleMessage(cMessage *msg)
 
 
     // received transmission confirm packet
-    else if (dynamic_cast<TransmissionConfirmMessage *>(msg))
+    else if (check_and_cast<TransmissionConfirmMessage *>(msg))
     {
-        TransmissionConfirmMessage *tcMsg = msg;
+        TransmissionConfirmMessage *tcMsg = static_cast<TransmissionConfirmMessage *>(msg);
 
         // status busy
         if (strcmp(tcMsg->getStatus(), "statusBusy") == 0)//If the two strings are equal, strcmp returns 0.
@@ -147,14 +137,14 @@ void MAC::handleMessage(cMessage *msg)
 
 
     // received transmission Higher Layer message
-    else if (dynamic_cast<TransmissionHigherLayerMessage *>(msg))
+    else if (check_and_cast<TransmissionHigherLayerMessage *>(msg))
     {
-        TransmissionHigherLayerMessage *thlMsg = msg;
+        TransmissionHigherLayerMessage *thlMsg = static_cast<TransmissionHigherLayerMessage *>(msg);
 
-        MacMessage *macMsg = thlMsg->decapsulate();
-        AppMessage *appMsg = macMsg->decapsulate();
+        MacMessage *macMsg = static_cast<MacMessage *>(thlMsg->decapsulate());
+        AppMessage *appMsg = static_cast<AppMessage *>(macMsg->decapsulate());
 
-        send(appMsg, "gate1$o");// send it to higher layer
+        send(appMsg, "gateForPacket$o");// send it to higher layer
 
         delete macMsg;
         delete thlMsg;
@@ -162,104 +152,59 @@ void MAC::handleMessage(cMessage *msg)
 
 
     //itself's packets
-    else
+    else if((check_and_cast<cMessage *>(msg)))
     {
         //get the packet from itself,simulate as waiting for time for next carrier sensing procedure
-        if (strcmp(msg->getName(), "CSMA_FAILED") == 0)
+        if (strcmp(msg->getName(), "CARRIER_SENSE_WAIT") == 0)
         {
             MACState = CARRIER_SENSE_RETRY;
         }
         delete msg;
     }
 
-    //MAC finite state machine(CSMA)
-    switch (MACState)
+
+    switch (MACState)//MAC finite state machine(CSMA)
     {
-        // the MAC module will stay in IDLE state if there is no packet in the macBuffer
-        case IDLE:
+        case IDLE://IDLE means there is no packet in the macBuffer
         {
-            // if there are packets in the macBuffer, then starts the MAC process.
-            if (!macBuffer.empty())
+            if (!macBuffer.empty())//if packets arrive in the macBuffer, then MAC have to process.
             {
-                // reset the backoff counter
-                backoffCounter = 0;
-
-                // start the carrier sensing procedure
-                // send a message of type CSRequest to the Transceiver
-                CSRequestMessage *csMsg = new CSRequestMessage;
-
-                send(csMsg, "gate2$o");
-
-                // advance to next state
+                backoffCounter = 0;// reset the backoff counter
+                CSRequestMessage *csMsg = new CSRequestMessage;// start the carrier sensing procedure
+                send(csMsg, "gateForTX$o");
                 MACState = CARRIER_SENSE_WAIT;
             }
             break;
         }
         case CARRIER_SENSE_RETRY:
         {
-            // start the carrier sensing procedure
-            // send a message of type CSRequest to the Transceiver
-            CSRequestMessage *csMsg = new CSRequestMessage;
-
-            send(csMsg, "gate2$o");
-
-            // advance to next state
+            CSRequestMessage *csMsg = new CSRequestMessage; // start the carrier sensing procedure
+            send(csMsg, "gateForTX$o");
             MACState = CARRIER_SENSE_WAIT;
-
-            break;
-        }
-        case CARRIER_SENSE_WAIT:
-        {
-            // the process will trap here until CSResponse is received
             break;
         }
         case TRANSMIT_START:
         {
             // CSResponse is received and the channel is clear to transmit
-            // we already know there will be packet in the queue
-
-            // extract the oldest message from buffer (create a deep copy)
-            AppMessage *appMsg = new AppMessage(*macBuffer.front());
-
-            // encapsulate it into a message mmsg of type MacMessage
+            AppMessage *appMsg = new AppMessage(*macBuffer.front()); //extract the oldest message from buffer
             MacMessage *mmsg = new MacMessage;
             mmsg->encapsulate(appMsg);
-
-            // encapsulate again into TransmissionRequest packet
             TransmissionRequestMessage *trMsg = new TransmissionRequestMessage;
             trMsg->encapsulate(mmsg);
+            send(trMsg, "gateForTX$o");
 
-            // nullify the pointers
             appMsg = nullptr;
             mmsg = nullptr;
 
-            // transmit the MacMessage
-            send(trMsg, "gate2$o");
-
-            // wait for transmission confirm
             MACState = TRANSMIT_WAIT;
-
-            break;
-        }
-        case TRANSMIT_WAIT:
-        {
-            // the process will trap here until TransmissionConfirm is received
             break;
         }
         case TRANSMIT_DONE:
         {
             AppMessage *appMsg = macBuffer.front();
             macBuffer.pop_front();
-
             delete appMsg;
-
-            // advance to IDLE state
             MACState = IDLE;
-        }
-
-        default:
-        {
-            break;
         }
     }
 }

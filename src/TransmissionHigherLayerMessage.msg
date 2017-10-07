@@ -1,3 +1,3 @@
-packet TransmissionIndicationMessage
+packet TransmissionHigherLayerMessage
 {
 }

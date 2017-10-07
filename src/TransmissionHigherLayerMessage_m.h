@@ -18,36 +18,36 @@
 /**
  * Class generated from <tt>TransmissionHigherLayerMessage.msg:2</tt> by nedtool.
  * <pre>
- * packet TransmissionIndicationMessage
+ * packet TransmissionHigherLayerMessage
  * {
  * }
  * </pre>
  */
-class TransmissionIndicationMessage : public ::omnetpp::cPacket
+class TransmissionHigherLayerMessage : public ::omnetpp::cPacket
 {
   protected:
 
   private:
-    void copy(const TransmissionIndicationMessage& other);
+    void copy(const TransmissionHigherLayerMessage& other);
 
   protected:
     // protected and unimplemented operator==(), to prevent accidental usage
-    bool operator==(const TransmissionIndicationMessage&);
+    bool operator==(const TransmissionHigherLayerMessage&);
 
   public:
-    TransmissionIndicationMessage(const char *name=nullptr, int kind=0);
-    TransmissionIndicationMessage(const TransmissionIndicationMessage& other);
-    virtual ~TransmissionIndicationMessage();
-    TransmissionIndicationMessage& operator=(const TransmissionIndicationMessage& other);
-    virtual TransmissionIndicationMessage *dup() const {return new TransmissionIndicationMessage(*this);}
+    TransmissionHigherLayerMessage(const char *name=nullptr, int kind=0);
+    TransmissionHigherLayerMessage(const TransmissionHigherLayerMessage& other);
+    virtual ~TransmissionHigherLayerMessage();
+    TransmissionHigherLayerMessage& operator=(const TransmissionHigherLayerMessage& other);
+    virtual TransmissionHigherLayerMessage *dup() const {return new TransmissionHigherLayerMessage(*this);}
     virtual void parsimPack(omnetpp::cCommBuffer *b) const;
     virtual void parsimUnpack(omnetpp::cCommBuffer *b);
 
     // field getter/setter methods
 };
 
-inline void doParsimPacking(omnetpp::cCommBuffer *b, const TransmissionIndicationMessage& obj) {obj.parsimPack(b);}
-inline void doParsimUnpacking(omnetpp::cCommBuffer *b, TransmissionIndicationMessage& obj) {obj.parsimUnpack(b);}
+inline void doParsimPacking(omnetpp::cCommBuffer *b, const TransmissionHigherLayerMessage& obj) {obj.parsimPack(b);}
+inline void doParsimUnpacking(omnetpp::cCommBuffer *b, TransmissionHigherLayerMessage& obj) {obj.parsimUnpack(b);}
 
 
 #endif // ifndef __TRANSMISSIONHIGHERLAYERMESSAGE_M_H
