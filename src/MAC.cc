@@ -13,7 +13,7 @@ using namespace omnetpp;
 #include "CSResponseMessage_m.h"
 #include "TransmissionRequestMessage_m.h"
 #include "TransmissionConfirmMessage_m.h"
-#include "TransmissionHigherLaryerMessage_m.h"
+#include "TransmissionIndicationMessage_m.h"
 
 
 Define_Module(MAC);
