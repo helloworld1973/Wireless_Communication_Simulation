@@ -22,6 +22,8 @@ using namespace omnetpp;
 #include "SignalStartMessage_m.h"
 #include "SignalStopMessage_m.h"
 
+#define pathLossExponent 4.0f
+
 class Transceiver : public cSimpleModule
 {
 public:
@@ -54,10 +56,6 @@ protected:
     int nodeYPosition;
     int nodeIdentifier;
 
-    void updateCurrentTransmissions(SignalStartMessage *startMsg);
-    SignalStartMessage * updateCurrentTransmissions(SignalStopMessage *stopMsg);
-
-    void markAllCollided();
     double getReceivedPowerDBm(SignalStartMessage *startMsg);
 
 };
@@ -112,13 +110,81 @@ void Transceiver::handleMessage(cMessage *msg)
 
         cMessage *ciMsg=new cMessage("CARRIER_SENSE_WAIT");
         scheduleAt(simTime() + csTime, ciMsg);// wait for csTime
-
         return;
     }
 
 
+    // Receive Path(SignalStart from the Channel)
+    if (check_and_cast<SignalStartMessage *>(msg))
+    {
+        SignalStartMessage *startMsg = static_cast<SignalStartMessage *>(msg);
+        if (!currentTransmissions.empty())//currentTransmission[] not empty
+        {
+            for (auto it = currentTransmissions.begin(); it != currentTransmissions.end(); it++)
+            {
+                if ((*it)->getIdentifier() == startMsg->getIdentifier())
+                {
+                    std::cout << "update SignalStartMessage to the CurrentTransmissions[] error !!!" << std::endl;
+                    delete msg; delete startMsg;
+                    return;
+                }
+            }//check whether the extracted identifier equals to the identifier which in currentTransmission[]
+            for (auto it = currentTransmissions.begin(); it != currentTransmissions.end(); it++)
+            {
+                (*it)->setCollidedFlag(true);
+            }//collision happened, set all the currentTransmission[]'s CollidedFlag TRUE
+            startMsg->setCollidedFlag(true);
+            currentTransmissions.push_back(new SignalStartMessage(*startMsg));//add SignalStartMessage to the currentTransmission[]
+        }else//currentTransmission[] empty
+        {
+            currentTransmissions.push_back(new SignalStartMessage(*startMsg));
+        }
+        delete msg;
+        return;
+    }
+
+    // Receive Path(SignalStop from the Channel)
+    if (check_and_cast<SignalStopMessage *>(msg))
+    {
+        SignalStopMessage *stopMsg = static_cast<SignalStopMessage *>(msg);
+        SignalStartMessage *startMsg;
+        int flagTemp=0;
+        for (auto it = currentTransmissions.begin(); it != currentTransmissions.end(); it++)
+            {
+                if ((*it)->getIdentifier() == stopMsg->getIdentifier())//find the corresponding SignalStartMessage with same identifier
+                {
+                    SignalStartMessage *startMsgTemp = *it;// get the SignalStartMessage
+                    startMsg = startMsgTemp;
+                    currentTransmissions.erase(it);// remove the SignalStartMessage from list
+                    flagTemp++;
+                }
+            }
+        if(flagTemp==0)
+            {
+                delete stopMsg;delete startMsg;
+                std::cout << "update SignalStopMessage to the CurrentTransmissions[] error !!!" << std::endl;
+                return;
+            }
+        else if(flagTemp==1)
+            {
+                delete stopMsg;
+                if (startMsg->getCollidedFlag())//the collided flag is true
+                {
+                    delete startMsg;
+                    return;//no further action
+                }
+                else
+                {
 
 
+
+
+
+                    delete startMsg;
+                    return;
+                }
+            }
+    }
 
 
 

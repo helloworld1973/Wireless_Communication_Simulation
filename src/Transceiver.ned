@@ -1,6 +1,6 @@
 simple Transceiver
 {
-	parameters:		
+	parameters:	    		
 		int txPowerDBm;// transmit power
 		int bitRate;// bit rate
 		int csThreshDBm;// carrier sensing threshold
