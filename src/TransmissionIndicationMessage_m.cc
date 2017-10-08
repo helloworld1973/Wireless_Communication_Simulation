@@ -1,5 +1,5 @@
 //
-// Generated file, do not edit! Created by nedtool 5.0 from TransmissionHigherLayerMessage.msg.
+// Generated file, do not edit! Created by nedtool 5.0 from TransmissionIndicationMessage.msg.
 //
 
 // Disable warnings about unused variables, empty switch stmts, etc:
@@ -10,7 +10,7 @@
 
 #include <iostream>
 #include <sstream>
-#include "TransmissionHigherLayerMessage_m.h"
+#include "TransmissionIndicationMessage_m.h"
 
 namespace omnetpp {
 
@@ -161,22 +161,22 @@ inline std::ostream& operator<<(std::ostream& out, const std::vector<T,A>& vec)
     return out;
 }
 
-Register_Class(TransmissionHigherLayerMessage);
+Register_Class(TransmissionIndicationMessage);
 
-TransmissionHigherLayerMessage::TransmissionHigherLayerMessage(const char *name, int kind) : ::omnetpp::cPacket(name,kind)
+TransmissionIndicationMessage::TransmissionIndicationMessage(const char *name, int kind) : ::omnetpp::cPacket(name,kind)
 {
 }
 
-TransmissionHigherLayerMessage::TransmissionHigherLayerMessage(const TransmissionHigherLayerMessage& other) : ::omnetpp::cPacket(other)
+TransmissionIndicationMessage::TransmissionIndicationMessage(const TransmissionIndicationMessage& other) : ::omnetpp::cPacket(other)
 {
     copy(other);
 }
 
-TransmissionHigherLayerMessage::~TransmissionHigherLayerMessage()
+TransmissionIndicationMessage::~TransmissionIndicationMessage()
 {
 }
 
-TransmissionHigherLayerMessage& TransmissionHigherLayerMessage::operator=(const TransmissionHigherLayerMessage& other)
+TransmissionIndicationMessage& TransmissionIndicationMessage::operator=(const TransmissionIndicationMessage& other)
 {
     if (this==&other) return *this;
     ::omnetpp::cPacket::operator=(other);
@@ -184,27 +184,27 @@ TransmissionHigherLayerMessage& TransmissionHigherLayerMessage::operator=(const 
     return *this;
 }
 
-void TransmissionHigherLayerMessage::copy(const TransmissionHigherLayerMessage& other)
+void TransmissionIndicationMessage::copy(const TransmissionIndicationMessage& other)
 {
 }
 
-void TransmissionHigherLayerMessage::parsimPack(omnetpp::cCommBuffer *b) const
+void TransmissionIndicationMessage::parsimPack(omnetpp::cCommBuffer *b) const
 {
     ::omnetpp::cPacket::parsimPack(b);
 }
 
-void TransmissionHigherLayerMessage::parsimUnpack(omnetpp::cCommBuffer *b)
+void TransmissionIndicationMessage::parsimUnpack(omnetpp::cCommBuffer *b)
 {
     ::omnetpp::cPacket::parsimUnpack(b);
 }
 
-class TransmissionHigherLayerMessageDescriptor : public omnetpp::cClassDescriptor
+class TransmissionIndicationMessageDescriptor : public omnetpp::cClassDescriptor
 {
   private:
     mutable const char **propertynames;
   public:
-    TransmissionHigherLayerMessageDescriptor();
-    virtual ~TransmissionHigherLayerMessageDescriptor();
+    TransmissionIndicationMessageDescriptor();
+    virtual ~TransmissionIndicationMessageDescriptor();
 
     virtual bool doesSupport(omnetpp::cObject *obj) const override;
     virtual const char **getPropertyNames() const override;
@@ -225,24 +225,24 @@ class TransmissionHigherLayerMessageDescriptor : public omnetpp::cClassDescripto
     virtual void *getFieldStructValuePointer(void *object, int field, int i) const override;
 };
 
-Register_ClassDescriptor(TransmissionHigherLayerMessageDescriptor);
+Register_ClassDescriptor(TransmissionIndicationMessageDescriptor);
 
-TransmissionHigherLayerMessageDescriptor::TransmissionHigherLayerMessageDescriptor() : omnetpp::cClassDescriptor("TransmissionHigherLayerMessage", "omnetpp::cPacket")
+TransmissionIndicationMessageDescriptor::TransmissionIndicationMessageDescriptor() : omnetpp::cClassDescriptor("TransmissionIndicationMessage", "omnetpp::cPacket")
 {
     propertynames = nullptr;
 }
 
-TransmissionHigherLayerMessageDescriptor::~TransmissionHigherLayerMessageDescriptor()
+TransmissionIndicationMessageDescriptor::~TransmissionIndicationMessageDescriptor()
 {
     delete[] propertynames;
 }
 
-bool TransmissionHigherLayerMessageDescriptor::doesSupport(omnetpp::cObject *obj) const
+bool TransmissionIndicationMessageDescriptor::doesSupport(omnetpp::cObject *obj) const
 {
-    return dynamic_cast<TransmissionHigherLayerMessage *>(obj)!=nullptr;
+    return dynamic_cast<TransmissionIndicationMessage *>(obj)!=nullptr;
 }
 
-const char **TransmissionHigherLayerMessageDescriptor::getPropertyNames() const
+const char **TransmissionIndicationMessageDescriptor::getPropertyNames() const
 {
     if (!propertynames) {
         static const char *names[] = {  nullptr };
@@ -253,19 +253,19 @@ const char **TransmissionHigherLayerMessageDescriptor::getPropertyNames() const
     return propertynames;
 }
 
-const char *TransmissionHigherLayerMessageDescriptor::getProperty(const char *propertyname) const
+const char *TransmissionIndicationMessageDescriptor::getProperty(const char *propertyname) const
 {
     omnetpp::cClassDescriptor *basedesc = getBaseClassDescriptor();
     return basedesc ? basedesc->getProperty(propertyname) : nullptr;
 }
 
-int TransmissionHigherLayerMessageDescriptor::getFieldCount() const
+int TransmissionIndicationMessageDescriptor::getFieldCount() const
 {
     omnetpp::cClassDescriptor *basedesc = getBaseClassDescriptor();
     return basedesc ? 0+basedesc->getFieldCount() : 0;
 }
 
-unsigned int TransmissionHigherLayerMessageDescriptor::getFieldTypeFlags(int field) const
+unsigned int TransmissionIndicationMessageDescriptor::getFieldTypeFlags(int field) const
 {
     omnetpp::cClassDescriptor *basedesc = getBaseClassDescriptor();
     if (basedesc) {
@@ -276,7 +276,7 @@ unsigned int TransmissionHigherLayerMessageDescriptor::getFieldTypeFlags(int fie
     return 0;
 }
 
-const char *TransmissionHigherLayerMessageDescriptor::getFieldName(int field) const
+const char *TransmissionIndicationMessageDescriptor::getFieldName(int field) const
 {
     omnetpp::cClassDescriptor *basedesc = getBaseClassDescriptor();
     if (basedesc) {
@@ -287,13 +287,13 @@ const char *TransmissionHigherLayerMessageDescriptor::getFieldName(int field) co
     return nullptr;
 }
 
-int TransmissionHigherLayerMessageDescriptor::findField(const char *fieldName) const
+int TransmissionIndicationMessageDescriptor::findField(const char *fieldName) const
 {
     omnetpp::cClassDescriptor *basedesc = getBaseClassDescriptor();
     return basedesc ? basedesc->findField(fieldName) : -1;
 }
 
-const char *TransmissionHigherLayerMessageDescriptor::getFieldTypeString(int field) const
+const char *TransmissionIndicationMessageDescriptor::getFieldTypeString(int field) const
 {
     omnetpp::cClassDescriptor *basedesc = getBaseClassDescriptor();
     if (basedesc) {
@@ -304,7 +304,7 @@ const char *TransmissionHigherLayerMessageDescriptor::getFieldTypeString(int fie
     return nullptr;
 }
 
-const char **TransmissionHigherLayerMessageDescriptor::getFieldPropertyNames(int field) const
+const char **TransmissionIndicationMessageDescriptor::getFieldPropertyNames(int field) const
 {
     omnetpp::cClassDescriptor *basedesc = getBaseClassDescriptor();
     if (basedesc) {
@@ -317,7 +317,7 @@ const char **TransmissionHigherLayerMessageDescriptor::getFieldPropertyNames(int
     }
 }
 
-const char *TransmissionHigherLayerMessageDescriptor::getFieldProperty(int field, const char *propertyname) const
+const char *TransmissionIndicationMessageDescriptor::getFieldProperty(int field, const char *propertyname) const
 {
     omnetpp::cClassDescriptor *basedesc = getBaseClassDescriptor();
     if (basedesc) {
@@ -330,7 +330,7 @@ const char *TransmissionHigherLayerMessageDescriptor::getFieldProperty(int field
     }
 }
 
-int TransmissionHigherLayerMessageDescriptor::getFieldArraySize(void *object, int field) const
+int TransmissionIndicationMessageDescriptor::getFieldArraySize(void *object, int field) const
 {
     omnetpp::cClassDescriptor *basedesc = getBaseClassDescriptor();
     if (basedesc) {
@@ -338,13 +338,13 @@ int TransmissionHigherLayerMessageDescriptor::getFieldArraySize(void *object, in
             return basedesc->getFieldArraySize(object, field);
         field -= basedesc->getFieldCount();
     }
-    TransmissionHigherLayerMessage *pp = (TransmissionHigherLayerMessage *)object; (void)pp;
+    TransmissionIndicationMessage *pp = (TransmissionIndicationMessage *)object; (void)pp;
     switch (field) {
         default: return 0;
     }
 }
 
-std::string TransmissionHigherLayerMessageDescriptor::getFieldValueAsString(void *object, int field, int i) const
+std::string TransmissionIndicationMessageDescriptor::getFieldValueAsString(void *object, int field, int i) const
 {
     omnetpp::cClassDescriptor *basedesc = getBaseClassDescriptor();
     if (basedesc) {
@@ -352,13 +352,13 @@ std::string TransmissionHigherLayerMessageDescriptor::getFieldValueAsString(void
             return basedesc->getFieldValueAsString(object,field,i);
         field -= basedesc->getFieldCount();
     }
-    TransmissionHigherLayerMessage *pp = (TransmissionHigherLayerMessage *)object; (void)pp;
+    TransmissionIndicationMessage *pp = (TransmissionIndicationMessage *)object; (void)pp;
     switch (field) {
         default: return "";
     }
 }
 
-bool TransmissionHigherLayerMessageDescriptor::setFieldValueAsString(void *object, int field, int i, const char *value) const
+bool TransmissionIndicationMessageDescriptor::setFieldValueAsString(void *object, int field, int i, const char *value) const
 {
     omnetpp::cClassDescriptor *basedesc = getBaseClassDescriptor();
     if (basedesc) {
@@ -366,13 +366,13 @@ bool TransmissionHigherLayerMessageDescriptor::setFieldValueAsString(void *objec
             return basedesc->setFieldValueAsString(object,field,i,value);
         field -= basedesc->getFieldCount();
     }
-    TransmissionHigherLayerMessage *pp = (TransmissionHigherLayerMessage *)object; (void)pp;
+    TransmissionIndicationMessage *pp = (TransmissionIndicationMessage *)object; (void)pp;
     switch (field) {
         default: return false;
     }
 }
 
-const char *TransmissionHigherLayerMessageDescriptor::getFieldStructName(int field) const
+const char *TransmissionIndicationMessageDescriptor::getFieldStructName(int field) const
 {
     omnetpp::cClassDescriptor *basedesc = getBaseClassDescriptor();
     if (basedesc) {
@@ -383,7 +383,7 @@ const char *TransmissionHigherLayerMessageDescriptor::getFieldStructName(int fie
     return nullptr;
 }
 
-void *TransmissionHigherLayerMessageDescriptor::getFieldStructValuePointer(void *object, int field, int i) const
+void *TransmissionIndicationMessageDescriptor::getFieldStructValuePointer(void *object, int field, int i) const
 {
     omnetpp::cClassDescriptor *basedesc = getBaseClassDescriptor();
     if (basedesc) {
@@ -391,7 +391,7 @@ void *TransmissionHigherLayerMessageDescriptor::getFieldStructValuePointer(void 
             return basedesc->getFieldStructValuePointer(object, field, i);
         field -= basedesc->getFieldCount();
     }
-    TransmissionHigherLayerMessage *pp = (TransmissionHigherLayerMessage *)object; (void)pp;
+    TransmissionIndicationMessage *pp = (TransmissionIndicationMessage *)object; (void)pp;
     switch (field) {
         default: return nullptr;
     }

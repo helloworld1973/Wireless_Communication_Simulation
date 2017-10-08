@@ -42,7 +42,7 @@ OBJS = \
     $O/SignalStartMessage_m.o \
     $O/SignalStopMessage_m.o \
     $O/TransmissionConfirmMessage_m.o \
-    $O/TransmissionHigherLayerMessage_m.o \
+    $O/TransmissionIndicationMessage_m.o \
     $O/TransmissionRequestMessage_m.o
 
 # Message files
@@ -54,7 +54,7 @@ MSGFILES = \
     SignalStartMessage.msg \
     SignalStopMessage.msg \
     TransmissionConfirmMessage.msg \
-    TransmissionHigherLayerMessage.msg \
+    TransmissionIndicationMessage.msg \
     TransmissionRequestMessage.msg
 
 # SM files
@@ -161,7 +161,7 @@ $O/MAC.o: MAC.cc \
 	CSResponseMessage_m.h \
 	MacMessage_m.h \
 	TransmissionConfirmMessage_m.h \
-	TransmissionHigherLayerMessage_m.h \
+	TransmissionIndicationMessage_m.h \
 	TransmissionRequestMessage_m.h
 $O/MacMessage_m.o: MacMessage_m.cc \
 	MacMessage_m.h
@@ -182,8 +182,8 @@ $O/Transceiver.o: Transceiver.cc \
 	TransmissionRequestMessage_m.h
 $O/TransmissionConfirmMessage_m.o: TransmissionConfirmMessage_m.cc \
 	TransmissionConfirmMessage_m.h
-$O/TransmissionHigherLayerMessage_m.o: TransmissionHigherLayerMessage_m.cc \
-	TransmissionHigherLayerMessage_m.h
+$O/TransmissionIndicationMessage_m.o: TransmissionIndicationMessage_m.cc \
+	TransmissionIndicationMessage_m.h
 $O/TransmissionRequestMessage_m.o: TransmissionRequestMessage_m.cc \
 	TransmissionRequestMessage_m.h
 

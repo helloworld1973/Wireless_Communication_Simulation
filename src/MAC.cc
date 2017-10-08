@@ -10,7 +10,7 @@ using namespace omnetpp;
 #include "CSResponseMessage_m.h"
 #include "TransmissionRequestMessage_m.h"
 #include "TransmissionConfirmMessage_m.h"
-#include "TransmissionHigherLayerMessage_m.h"
+#include "TransmissionIndicationMessage_m.h"
 #include "MacMessage_m.h"
 
 class MAC : public cSimpleModule
@@ -136,10 +136,10 @@ void MAC::handleMessage(cMessage *msg)
     }
 
 
-    // received transmission Higher Layer message
-    else if (check_and_cast<TransmissionHigherLayerMessage *>(msg))
+    // received TransmissionIndicationMessage
+    else if (check_and_cast<TransmissionIndicationMessage *>(msg))
     {
-        TransmissionHigherLayerMessage *thlMsg = static_cast<TransmissionHigherLayerMessage *>(msg);
+        TransmissionIndicationMessage *thlMsg = static_cast<TransmissionIndicationMessage *>(msg);
 
         MacMessage *macMsg = static_cast<MacMessage *>(thlMsg->decapsulate());
         AppMessage *appMsg = static_cast<AppMessage *>(macMsg->decapsulate());
