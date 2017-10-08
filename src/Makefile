@@ -176,9 +176,11 @@ $O/Transceiver.o: Transceiver.cc \
 	AppMessage_m.h \
 	CSRequestMessage_m.h \
 	CSResponseMessage_m.h \
+	MacMessage_m.h \
 	SignalStartMessage_m.h \
 	SignalStopMessage_m.h \
 	TransmissionConfirmMessage_m.h \
+	TransmissionIndicationMessage_m.h \
 	TransmissionRequestMessage_m.h
 $O/TransmissionConfirmMessage_m.o: TransmissionConfirmMessage_m.cc \
 	TransmissionConfirmMessage_m.h
