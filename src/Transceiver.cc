@@ -1,11 +1,11 @@
 #include <omnetpp.h>
 #include <stdio.h>
 #include <string.h>
-#include <cmath>
-#include <ctgmath>
 #include <iostream>
 #include <vector>
 #include <cmath>
+#include <ctgmath>
+
 using namespace omnetpp;
 
 #include "AppMessage_m.h"
@@ -157,6 +157,7 @@ void Transceiver::handleMessage(cMessage *msg)
                     startMsg = startMsgTemp;
                     currentTransmissions.erase(it);// remove the SignalStartMessage from list
                     flagTemp++;
+                    delete startMsgTemp;
                 }
             }
         if(flagTemp==0)
@@ -175,11 +176,29 @@ void Transceiver::handleMessage(cMessage *msg)
                 }
                 else
                 {
+                    MacMessage *mpkt = static_cast<MacMessage *>(startMsg->decapsulate());// extract mac packet
+                    double received_power_db = getReceivedPowerDBm(startMsg);// calculate the received power in dBm
 
+                    double bit_rate_db = 10 * log10(bitRate);// -> dB domain
+                    double snr_db = received_power_db - (noisePowerDBm + bit_rate_db);//calculate signal-to-noise ratio(SNR)
+                    double snr_n = pow(10, snr_db/10);// -> normal domain
+                    double bit_error_rate = erfc(sqrt(2 * snr_n));// calculate bit error rate
+                    int packet_length = 8 * static_cast<AppMessage *>(mpkt->getEncapsulatedPacket())->getMsgSize();//get packet length(1byte=8bits)
+                    double packet_error_rate = 1 - pow((1 - bit_error_rate), packet_length);// calculate packet error rate(PER=1-(1-BER)^n)
 
-
-
-
+                    srand(time(NULL));
+                    double u = (rand()%100)*0.01;//random num(0-1)( two numbers to the right of the decimal)
+                    if (u < packet_error_rate)
+                    {
+                        delete mpkt;
+                    }
+                    else
+                    {
+                        TransmissionIndicationMessage * tiMsg = new TransmissionIndicationMessage;
+                        tiMsg->encapsulate(mpkt);
+                        send(tiMsg, "gateForMAC$o");//send encapsulated MacMessage to higher layer
+                        mpkt = nullptr;
+                    }
                     delete startMsg;
                     return;
                 }
@@ -313,8 +332,6 @@ void Transceiver::handleMessage(cMessage *msg)
         break;
     }
     }
-
-
 
 }
 
