@@ -1,6 +1,5 @@
 #include <omnetpp.h>
 #include <stdio.h>
-#include <vector>
 #include <string.h>
 #include <iostream>
 #include <deque>
@@ -15,266 +14,207 @@ using namespace omnetpp;
 #include "TransmissionConfirmMessage_m.h"
 #include "TransmissionIndicationMessage_m.h"
 
-
-Define_Module(MAC);
-
 class MAC : public cSimpleModule
 {
 public:
     MAC();
     ~MAC();
 
-    int numOfPacketsDroppedOverFlow = 0;
-    int numOfPacketsDroppedTimeOut = 0;
-
 protected:
     typedef enum
     {
-        IDLE = 0,
+        IDLE,
         CARRIER_SENSE_RETRY,
         CARRIER_SENSE_WAIT,
         TRANSMIT_START,
         TRANSMIT_WAIT,
         TRANSMIT_DONE
-    } MACState_t;
+    } MACState_t; //treat MAC as a finite state machine as well
 
 protected:
     virtual void initialize();
     virtual void handleMessage(cMessage *msg);
 
 protected:
+    MACState_t MACState;
     int bufferSize;
     int maxBackoffs;
     double backoffDistribution;
 
     std::deque<AppMessage *> macBuffer;
-    int backoffCounter;
-    MACState_t MACState;
+    int backoffCounter; //local variable 
 };
 
+Define_Module(MAC);
 
 MAC::MAC()
-    : cSimpleModule()
 {
 
 }
 
 MAC::~MAC()
 {
-    while (macBuffer.size() > 0)
-    {
-        AppMessage *appMsg = macBuffer.front();
-        macBuffer.pop_front();
-        delete appMsg;
-    }
-
-
-    //std::string filename = "Data_Dropped_MAC.txt";
-    FILE * filePointerToWrite = fopen("Data_Dropped_MAC.txt", "a");
-    if (filePointerToWrite == NULL) return;
-
-
-    int nodeXPosition = getParentModule()->par("nodeXPosition");
-    int nodeYPosition = getParentModule()->par("nodeYPosition");
-
-
-    int nodeIdentifier = getParentModule()->par("nodeIdentifier");
-
-
-    fprintf(filePointerToWrite, "TransceiverNode #           NumOfMessage Dropped-OverFlow          numOfPacketsDroppedTimeOut          Position(X.Y)\n");
-    fprintf(filePointerToWrite, "%d,                         %d,                                    %d,                           %d,%d\n",
-           nodeIdentifier, numOfPacketsDroppedOverFlow, numOfPacketsDroppedTimeOut, nodeXPosition, nodeYPosition);
-
-    fclose(filePointerToWrite);
+   
 }
 
 void MAC::initialize()
 {
-    numOfPacketsDroppedOverFlow = 0;
-    numOfPacketsDroppedTimeOut = 0;
-
     bufferSize = par("bufferSize");
     maxBackoffs = par("maxBackoffs");
     backoffDistribution = par("backoffDistribution");
 
     macBuffer.resize(bufferSize);
-    macBuffer.clear();
+    macBuffer.clear(); //allocate memory for macBuffer
 
     backoffCounter = 0;
-
-    MACState = IDLE;
+    //MACState = IDLE;
 }
 
 void MAC::handleMessage(cMessage *msg)
 {
-    if (dynamic_cast<AppMessage *>(msg))
+    //check the type of the message if the received packet is from Packet Generator
+    //if it is nullptr, check_and_cast raises an OMNeT++ error. Using check_and_cast saves you from writing error checking code
+    if (check_and_cast<AppMessage *>(msg))
     {
         AppMessage *appMsg = static_cast<AppMessage *>(msg);
 
-        if (macBuffer.size() == (size_t) bufferSize)
+        // add packet in the end of macBuffer,  if the buffer is full, then drop the packet
+        if (macBuffer.size() == bufferSize)
         {
-            numOfPacketsDroppedOverFlow++;
             delete appMsg;
         }
-
         else
         {
             macBuffer.push_back(appMsg);
         }
     }
 
-    else if (dynamic_cast<CSResponseMessage *>(msg))
+
+    // received carrier sensing response packet
+    else if (check_and_cast<CSResponseMessage *>(msg))
     {
         CSResponseMessage *csMsg = static_cast<CSResponseMessage *>(msg);
 
-        if (csMsg->getBusyChannel())
+        if (csMsg->getBusyChannel())//the channel is busy
         {
-
             backoffCounter++;
 
-            if (backoffCounter < maxBackoffs)
+            if (backoffCounter < maxBackoffs)//still can do carrier sense retry
             {
+                // wait for a random time for next carrier sense
+                scheduleAt(simTime() + backoffDistribution, new cMessage("CARRIER_SENSE_WAIT"));
 
-                scheduleAt(simTime() + backoffDistribution, new cMessage("CSMA_FAILED"));
-
-                MACState = CARRIER_SENSE_WAIT;
+                MACState = CARRIER_SENSE_WAIT;//reset the state
             }
-            else
+            else//reach the max carrier sense retry times
             {
                 AppMessage *appMsg = macBuffer.front();
                 macBuffer.pop_front();
-                numOfPacketsDroppedTimeOut++;
-                delete appMsg;
+                delete appMsg;//drop the current AppMessage
 
+                // cancel the current transmission
                 MACState = IDLE;
             }
         }
-
-         else
+        else//the carrier is idle, transmit
         {
             MACState = TRANSMIT_START;
         }
-
-        delete msg;
+        delete msg;//delete the CSResponseMessage
     }
 
 
-    else if (dynamic_cast<TransmissionConfirmMessage *>(msg))
+    // received transmission confirm packet
+    else if (check_and_cast<TransmissionConfirmMessage *>(msg))
     {
         TransmissionConfirmMessage *tcMsg = static_cast<TransmissionConfirmMessage *>(msg);
 
-        if (strcmp(tcMsg->getStatus(), "statusBusy") == 0)
+        // status busy
+        if (strcmp(tcMsg->getStatus(), "statusBusy") == 0)//If the two strings are equal, strcmp returns 0.
         {
-            // TODO: check
-            MACState = IDLE;
+            MACState = IDLE;//set state to IDLE
         }
-
+        // status ok
         else if (strcmp(tcMsg->getStatus(), "statusOK") == 0)
         {
-            MACState = TRANSMIT_DONE;
+            MACState = TRANSMIT_DONE;// set the state to transmit done(can extract a packet in the front of macBuffer)
         }
-
-        delete msg;
+        delete msg;//delete the TransmissionConfirmMessage
     }
 
-    else if (dynamic_cast<TransmissionIndicationMessage *>(msg))
+
+    // received TransmissionIndicationMessage
+    else if (check_and_cast<TransmissionIndicationMessage *>(msg))
     {
-        TransmissionIndicationMessage *tiMsg = static_cast<TransmissionIndicationMessage *>(msg);
+        TransmissionIndicationMessage *thlMsg = static_cast<TransmissionIndicationMessage *>(msg);
 
-        MacMessage *macMsg = static_cast<MacMessage *>(tiMsg->decapsulate());
-
+        MacMessage *macMsg = static_cast<MacMessage *>(thlMsg->decapsulate());
         AppMessage *appMsg = static_cast<AppMessage *>(macMsg->decapsulate());
 
-        send(appMsg, "gate1$o");
+        send(appMsg, "gateForPacket$o");// send it to higher layer
 
         delete macMsg;
-        delete tiMsg;
+        delete thlMsg;
     }
 
-    else
-    {
 
-        if (strcmp(msg->getName(), "CSMA_FAILED") == 0)
+    //itself's packets
+    else if((check_and_cast<cMessage *>(msg)))
+    {
+        //get the packet from itself,simulate as waiting for time for next carrier sensing procedure
+        if (strcmp(msg->getName(), "CARRIER_SENSE_WAIT") == 0)
         {
             MACState = CARRIER_SENSE_RETRY;
         }
-
         delete msg;
     }
 
-    switch (MACState)
+
+    switch (MACState)//MAC finite state machine(CSMA)
     {
-
-        case IDLE:
+        case IDLE://IDLE means there is no packet in the macBuffer
         {
-
-            if (!macBuffer.empty())
+            if (!macBuffer.empty())//if packets arrive in the macBuffer, then MAC have to process.
             {
-
-                backoffCounter = 0;
-
-                CSRequestMessage *csMsg = new CSRequestMessage;
-
-                send(csMsg, "gate2$o");
-
+                backoffCounter = 0;// reset the backoff counter
+                CSRequestMessage *csMsg = new CSRequestMessage;// start the carrier sensing procedure
+                send(csMsg, "gateForTX$o");
                 MACState = CARRIER_SENSE_WAIT;
             }
             break;
         }
         case CARRIER_SENSE_RETRY:
         {
-
-            CSRequestMessage *csMsg = new CSRequestMessage;
-
-            send(csMsg, "gate2$o");
-
+            CSRequestMessage *csMsg = new CSRequestMessage; // start the carrier sensing procedure
+            send(csMsg, "gateForTX$o");
             MACState = CARRIER_SENSE_WAIT;
-
-            break;
-        }
-        case CARRIER_SENSE_WAIT:
-        {
-
             break;
         }
         case TRANSMIT_START:
         {
-
-            AppMessage *appMsg = new AppMessage(*macBuffer.front());
-
+            // CSResponse is received and the channel is clear to transmit
+            AppMessage *appMsg = new AppMessage(*macBuffer.front()); //extract the oldest message from buffer
             MacMessage *mmsg = new MacMessage;
             mmsg->encapsulate(appMsg);
-
             TransmissionRequestMessage *trMsg = new TransmissionRequestMessage;
             trMsg->encapsulate(mmsg);
+            send(trMsg, "gateForTX$o");
 
             appMsg = nullptr;
             mmsg = nullptr;
 
-            send(trMsg, "gate2$o");
-
             MACState = TRANSMIT_WAIT;
-
-            break;
-        }
-        case TRANSMIT_WAIT:
-        {
             break;
         }
         case TRANSMIT_DONE:
         {
             AppMessage *appMsg = macBuffer.front();
             macBuffer.pop_front();
-
             delete appMsg;
-
             MACState = IDLE;
         }
-
-        default:
-        {
-            break;
-        }
+        case CARRIER_SENSE_WAIT:break;
+        case TRANSMIT_WAIT:break;
     }
 }
 
