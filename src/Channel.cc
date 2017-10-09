@@ -7,15 +7,15 @@ using namespace omnetpp;
 
 class Channel : public cSimpleModule
 {
-protected:
-    virtual void initialize();
-    virtual void handleMessage(cMessage *msg);
+    protected:
+        virtual void initialize();
+        virtual void handleMessage(cMessage *msg);
 
-protected:
-    int numGates;
+    protected:
+        int numGates;
 };
-
 Define_Module(Channel);
+
 
 void Channel::initialize()
 {
@@ -24,28 +24,25 @@ void Channel::initialize()
 
 void Channel::handleMessage(cMessage *msg)
 {
-    if (dynamic_cast<SignalStartMessage *>(msg))
+    if (check_and_cast<SignalStartMessage *>(msg))
     {
         SignalStartMessage * startMsg = static_cast<SignalStartMessage *>(msg);
-
         for (int i = 0; i < numGates; i++)
         {
             SignalStartMessage * newMsg = new SignalStartMessage(*startMsg);
-            send(newMsg, "gate$o", i);
+            send(newMsg, "gateNet$o", i);
         }
-
         delete msg;
     }
 
-    else if (dynamic_cast<SignalStopMessage *>(msg))
+    else if (check_and_cast<SignalStopMessage *>(msg))
     {
         SignalStopMessage * stopMsg = static_cast<SignalStopMessage *>(msg);
         for (int i = 0; i < numGates; i++)
         {
             SignalStopMessage * newMsg = new SignalStopMessage(*stopMsg);
-            send(newMsg, "gate$o", i);
+            send(newMsg, "gateNet$o", i);
         }
-
         delete msg;
     }
 
@@ -53,5 +50,5 @@ void Channel::handleMessage(cMessage *msg)
     {
         delete msg;
     }
-}
 
+}

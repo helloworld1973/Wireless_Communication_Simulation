@@ -2,10 +2,9 @@
 #include <stdio.h>
 #include <string.h>
 #include <iostream>
-#include <cmath>
-#include <ctgmath>
-
 using namespace omnetpp;
+
+#include "AppMessage_m.h"
 
 class PacketSink : public cSimpleModule
 {
@@ -18,76 +17,44 @@ protected:
     virtual void handleMessage(cMessage *msg);
 
     std::string filename;
+    int numOfPackets;
 };
-
 Define_Module(PacketSink);
 
-PacketSink::PacketSink()
-    : cSimpleModule()
-{
 
+PacketSink::PacketSink()
+{
 }
 
 PacketSink::~PacketSink()
-{
-    //std::string filename = "Data_Received.txt";
-    FILE * filePointerToWrite = fopen("Data_Received.txt", "a");
-    if (filePointerToWrite == NULL) return;
-
-    int nodeXPosition = getParentModule()->par("nodeXPosition");
-    int nodeYPosition = getParentModule()->par("nodeYPosition");
-
-    int nodeIdentifier = getParentModule()->par("nodeIdentifier");
-
-    fprintf(filePointerToWrite, "ReceiverNode #           NumOfMessage Received         Position(X.Y)\n");
-    fprintf(filePointerToWrite, "%d,                      %d,                           %d,%d\n",
-            nodeIdentifier, numOfPacketsReceived, nodeXPosition, nodeYPosition);
-
-    fclose(filePointerToWrite);
-
-    FILE * MessageLogFilePointer = fopen("Message_PacketSink.txt", "a");
-
-    for(int i = 0; i < numOfPacketsReceived; i++){
-        if(numOfPacketsReceived >= circBuffSize) break;
-        AppMessage *appMsg = sinkBuffer[i];
-	}
-    fclose(MessageLogFilePointer);
+{  
+	 fclose(filePointer);     
 }
 
 void PacketSink::initialize()
 {
-    circBuffSize = 10000;
-    writeIndex = 0;
-    numOfPacketsReceived = 0;
-    FILE * MessageLogFilePointer = fopen("Message_PacketSink.txt", "a");
-    if (MessageLogFilePointer != NULL)
+	  filename = par("filename").str();
+    numOfPackets = 0;
+    FILE * filePointer = fopen(filename, "a");
+    if (filePointer != NULL)
     {
-		fprintf(MessageLogFilePointer, "NumOfMessage Received      msgSize      timeStamp      SenderID      sequenceNumber\n");
-        fclose(MessageLogFilePointer);
+        fprintf(filePointer, "Index      ReceivedTimeStamp      GeneratedTimeStamp      SenderID      sequenceNumber      msgSize\n");
+        //fclose(filePointer);
     }
-    filename = par("filename").str();
 }
+
 
 void PacketSink::handleMessage(cMessage *msg)
 {
-    numOfPacketsReceived++;
-    if (dynamic_cast<AppMessage *>(msg))
+    if (check_and_cast<AppMessage *>(msg))
     {
-        AppMessage *appMsg = static_cast<AppMessage *>(msg);
-        if (writeIndex < circBuffSize)
-		{
-            sinkBuffer[writeIndex] = appMsg;
-        }
-        else
-		{
-			writeIndex = 0;
-		}
-        writeIndex++;
-        delete msg;
-    }
-
-    else
-    {
-        delete msg;
+    	AppMessage *appMsg = static_cast<AppMessage *>(msg);
+    	simtime_t timeStamp = simTime();//current simulation time
+    	FILE * filePointer = fopen(filename, "a");
+    	fprintf(filePointer, "%d,      %f,      %f,      %d,      %d,      %d\n",
+             numOfPackets, timeStamp.dbl() , SIMTIME_DBL(appMsg->timeStamp), appMsg->senderId, appMsg->sequenceNumber, appMsg->msgSize);
+     
+      numOfPackets++;
+      delete msg;
     }
 }
