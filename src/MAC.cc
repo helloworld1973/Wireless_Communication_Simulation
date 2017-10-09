@@ -26,11 +26,11 @@ class MAC : public cSimpleModule
         typedef enum
         {
             IDLE,
-            CARRIER_SENSE_RETRY,
-            CARRIER_SENSE_WAIT,
+            CS_RETRY,
+            CS_WAITING,
             TRANSMIT_START,
-            TRANSMIT_WAIT,
-            TRANSMIT_DONE
+            TRANSMIT_WAITING,
+            TRANSMIT_OVER
         } MACState_t;//treat MAC as a finite state machine as well
 
         MACState_t MACState;
@@ -95,9 +95,9 @@ void MAC::handleMessage(cMessage *msg)
             if (backoffCounter < maxBackoffs)//still can do carrier sense retry
             {
                 // wait for a random time for next carrier sense
-                scheduleAt(simTime() + backoffDistribution, new cMessage("CARRIER_SENSE_WAIT"));
+                scheduleAt(simTime() + backoffDistribution, new cMessage("CS_WAITING"));
 
-                MACState = CARRIER_SENSE_WAIT;//reset the state
+                MACState = CS_WAITING;//reset the state
             }
             else//reach the max carrier sense retry times
             {
@@ -130,7 +130,7 @@ void MAC::handleMessage(cMessage *msg)
         // status ok
         else if (strcmp(tcMsg->getStatus(), "statusOK") == 0)
         {
-            MACState = TRANSMIT_DONE;// set the state to transmit done(can extract a packet in the front of macBuffer)
+            MACState = TRANSMIT_OVER;// set the state to transmit done(can extract a packet in the front of macBuffer)
         }
         delete msg;//delete the TransmissionConfirmMessage
     }
@@ -155,9 +155,9 @@ void MAC::handleMessage(cMessage *msg)
     else if((check_and_cast<cMessage *>(msg)))
     {
         //get the packet from itself,simulate as waiting for time for next carrier sensing procedure
-        if (strcmp(msg->getName(), "CARRIER_SENSE_WAIT") == 0)
+        if (strcmp(msg->getName(), "CS_WAITING") == 0)
         {
-            MACState = CARRIER_SENSE_RETRY;
+            MACState = CS_RETRY;
         }
         delete msg;
     }
@@ -172,15 +172,15 @@ void MAC::handleMessage(cMessage *msg)
                 backoffCounter = 0;// reset the backoff counter
                 CSRequestMessage *csMsg = new CSRequestMessage;// start the carrier sensing procedure
                 send(csMsg, "gateForTX$o");
-                MACState = CARRIER_SENSE_WAIT;
+                MACState = CS_WAITING;
             }
             break;
         }
-        case CARRIER_SENSE_RETRY:
+        case CS_RETRY:
         {
             CSRequestMessage *csMsg = new CSRequestMessage; // start the carrier sensing procedure
             send(csMsg, "gateForTX$o");
-            MACState = CARRIER_SENSE_WAIT;
+            MACState = CS_WAITING;
             break;
         }
         case TRANSMIT_START:
@@ -196,17 +196,17 @@ void MAC::handleMessage(cMessage *msg)
             appMsg = nullptr;
             mmsg = nullptr;
 
-            MACState = TRANSMIT_WAIT;
+            MACState = TRANSMIT_WAITING;
             break;
         }
-        case TRANSMIT_DONE:
+        case TRANSMIT_OVER:
         {
             AppMessage *appMsg = macBuffer.front();
             macBuffer.pop_front();
             delete appMsg;
             MACState = IDLE;
         }
-        case CARRIER_SENSE_WAIT:break;
-        case TRANSMIT_WAIT:break;
+        case CS_WAITING:break;
+        case TRANSMIT_WAITING:break;
     }
 }

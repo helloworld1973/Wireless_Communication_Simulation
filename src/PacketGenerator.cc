@@ -72,8 +72,8 @@ AppMessage *PacketGenerator::generateMessage()
 
     int msgSize = messageSize;
 
-    char msgname[32];// generate message name include info
-    snprintf(msgname, 32, "sender=%d seq=%d ts=%f", senderId, sequenceNumber, timeStamp.dbl());
+    char msgname[40];// generate message name include info
+    snprintf(msgname, 40, "sender=%d seq=%d ts=%f", senderId, sequenceNumber, timeStamp.dbl());
 
     AppMessage * msg = new AppMessage(msgname);
 
