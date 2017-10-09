@@ -1,12 +1,10 @@
-
 simple MAC
 {
 	parameters:
-		int bufferSize;
-		int maxBackoffs;
-		double backoffDistribution;
-		
+		int bufferSize;			// buffer size for higher layer packets		
+		int maxBackoffs;		// maximum backoff counts
+		double backoffDistribution;	// distribution for random backoff period
 	gates:
-		inout gateForPacket;
+        	inout gateForPacket;
 		inout gateForTX;
 }
