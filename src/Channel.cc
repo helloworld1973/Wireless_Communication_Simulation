@@ -2,6 +2,7 @@
 
 using namespace omnetpp;
 
+
 class Channel : public cSimpleModule
 {
     protected:
