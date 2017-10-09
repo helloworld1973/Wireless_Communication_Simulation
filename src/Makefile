@@ -154,7 +154,9 @@ $O/CSRequestMessage_m.o: CSRequestMessage_m.cc \
 	CSRequestMessage_m.h
 $O/CSResponseMessage_m.o: CSResponseMessage_m.cc \
 	CSResponseMessage_m.h
-$O/Channel.o: Channel.cc
+$O/Channel.o: Channel.cc \
+	SignalStartMessage_m.h \
+	SignalStopMessage_m.h
 $O/MAC.o: MAC.cc \
 	AppMessage_m.h \
 	CSRequestMessage_m.h \
@@ -167,7 +169,8 @@ $O/MacMessage_m.o: MacMessage_m.cc \
 	MacMessage_m.h
 $O/PacketGenerator.o: PacketGenerator.cc \
 	AppMessage_m.h
-$O/PacketSink.o: PacketSink.cc
+$O/PacketSink.o: PacketSink.cc \
+	AppMessage_m.h
 $O/SignalStartMessage_m.o: SignalStartMessage_m.cc \
 	SignalStartMessage_m.h
 $O/SignalStopMessage_m.o: SignalStopMessage_m.cc \

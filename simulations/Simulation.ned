@@ -5,7 +5,7 @@ network Simulation
 		ReceiverNodeModule : ReceiverNode;
 		ChannelModule : Channel;
 	connections:
-	ReceiverNodeModule.gateForChnl <--> ChannelModule.gateChnl++;
-	TransmitterNodeModule[0].gateForChnl <--> ChannelModule.gateChnl++;
-	TransmitterNodeModule[1].gateForChnl <--> ChannelModule.gateChnl++;
+	ReceiverNodeModule.gateForChnl <--> ChannelModule.gateNet++;
+	TransmitterNodeModule[0].gateForChnl <--> ChannelModule.gateNet++;
+	TransmitterNodeModule[1].gateForChnl <--> ChannelModule.gateNet++;
 }
