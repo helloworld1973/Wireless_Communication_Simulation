@@ -1,5 +1,5 @@
 simple Channel
 {
 	gates:
-		inout gateChnl[];
+		inout gateNet[];
 }
