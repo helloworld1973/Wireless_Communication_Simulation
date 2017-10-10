@@ -12,7 +12,6 @@ module ReceiverNode
         TransceiverModule: Transceiver;    
     connections allowunconnected:
         PacketSinkModule.in <-- MACModule.gateForPacket$o;
-        MACModule.gateForTX <--> TransceiverModule.gateForMAC;
-        
-        TransceiverModule.gateForTXRXNode <--> gateForChnl;// interface
+        MACModule.gateForTX <--> TransceiverModule.gateForMAC;       
+        TransceiverModule.gateForTXRXNode <--> gateForChnl;
 }

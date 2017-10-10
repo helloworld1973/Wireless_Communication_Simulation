@@ -49,6 +49,13 @@ MAC::MAC()
 
 MAC::~MAC()
 {
+    // dump all packets in the queue
+    while (macBuffer.size() > 0)
+    {
+        AppMessage *appMsg = macBuffer.front();
+        macBuffer.pop_front();
+        delete appMsg;
+    }
 }
 
 void MAC::initialize()
@@ -61,13 +68,14 @@ void MAC::initialize()
     macBuffer.clear();//allocate memory for macBuffer
 
     backoffCounter = 0;
+    MACState = IDLE;
 }
 
 void MAC::handleMessage(cMessage *msg)
 {
     //check the type of the message if the received packet is from Packet Generator
-    //if it is nullptr, check_and_cast raises an OMNeT++ error. Using check_and_cast saves you from writing error checking code
-    if (check_and_cast<AppMessage *>(msg))
+    //if it is nullptr, dynamic_cast raises an OMNeT++ error. Using dynamic_cast saves you from writing error checking code
+    if (dynamic_cast<AppMessage *>(msg))
     {
         AppMessage *appMsg = static_cast<AppMessage *>(msg);
 
@@ -84,7 +92,7 @@ void MAC::handleMessage(cMessage *msg)
 
 
     // received carrier sensing response packet
-    else if (check_and_cast<CSResponseMessage *>(msg))
+    else if (dynamic_cast<CSResponseMessage *>(msg))
     {
         CSResponseMessage *csMsg = static_cast<CSResponseMessage *>(msg);
 
@@ -118,7 +126,7 @@ void MAC::handleMessage(cMessage *msg)
 
 
     // received transmission confirm packet
-    else if (check_and_cast<TransmissionConfirmMessage *>(msg))
+    else if (dynamic_cast<TransmissionConfirmMessage *>(msg))
     {
         TransmissionConfirmMessage *tcMsg = static_cast<TransmissionConfirmMessage *>(msg);
 
@@ -137,7 +145,7 @@ void MAC::handleMessage(cMessage *msg)
 
 
     // received TransmissionIndicationMessage
-    else if (check_and_cast<TransmissionIndicationMessage *>(msg))
+    else if (dynamic_cast<TransmissionIndicationMessage *>(msg))
     {
         TransmissionIndicationMessage *thlMsg = static_cast<TransmissionIndicationMessage *>(msg);
 
@@ -152,7 +160,7 @@ void MAC::handleMessage(cMessage *msg)
 
 
     //itself's packets
-    else if((check_and_cast<cMessage *>(msg)))
+    else if((dynamic_cast<cMessage *>(msg)))
     {
         //get the packet from itself,simulate as waiting for time for next carrier sensing procedure
         if (strcmp(msg->getName(), "CS_WAITING") == 0)

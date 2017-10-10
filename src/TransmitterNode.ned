@@ -1,11 +1,11 @@
 module TransmitterNode
 {
     parameters:
-        int nodeIdentifier;//set in configuration file
-        int nodeXPosition;// maybe change to transciever later
-        int nodeYPosition;// maybe change to transciever later
+        int nodeIdentifier;
+        int nodeXPosition;
+        int nodeYPosition;
     gates:
-        inout gateForChnl;// TXNode as a whole to connect to channel
+        inout gateForChnl;
     submodules:
         PacketGeneratorModule: PacketGenerator;
         MACModule: MAC;

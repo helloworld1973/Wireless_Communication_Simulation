@@ -1,7 +1,7 @@
 simple PacketSink
 {
 	parameters:
-		string filename;
+		string fileName;
 	gates:
 		input in;
 }

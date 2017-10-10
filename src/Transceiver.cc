@@ -93,7 +93,7 @@ void Transceiver::initialize()
 void Transceiver::handleMessage(cMessage *msg)
 {
     //Carrier Sense,step 1,go on
-    if (check_and_cast<CSRequestMessage *>(msg))
+    if (dynamic_cast<CSRequestMessage *>(msg))
     {
         delete msg;
 
@@ -115,7 +115,7 @@ void Transceiver::handleMessage(cMessage *msg)
 
 
     // Receive Path(SignalStart from the Channel)
-    if (check_and_cast<SignalStartMessage *>(msg))
+    if (dynamic_cast<SignalStartMessage *>(msg))
     {
         SignalStartMessage *startMsg = static_cast<SignalStartMessage *>(msg);
         if (!currentTransmissions.empty())//currentTransmission[] not empty
@@ -144,7 +144,7 @@ void Transceiver::handleMessage(cMessage *msg)
     }
 
     // Receive Path(SignalStop from the Channel)
-    if (check_and_cast<SignalStopMessage *>(msg))
+    else if (dynamic_cast<SignalStopMessage *>(msg))
     {
         SignalStopMessage *stopMsg = static_cast<SignalStopMessage *>(msg);
         SignalStartMessage *startMsg;
@@ -212,7 +212,7 @@ void Transceiver::handleMessage(cMessage *msg)
     case RXState:
     {
         // Transmit Path(RX State)step 1,go on
-        if (check_and_cast<TransmissionRequestMessage *>(msg))
+        if (dynamic_cast<TransmissionRequestMessage *>(msg))
         {
             TransmissionRequestMessage *trMsg = static_cast<TransmissionRequestMessage *>(msg);
             MacMessage *macMsg = static_cast<MacMessage *>(trMsg->decapsulate());
@@ -221,7 +221,7 @@ void Transceiver::handleMessage(cMessage *msg)
             scheduleAt(simTime() + turnaroundTime, macMsg);// wait for the TurnaroundTime
         }
         // Carrier Sense(RX State)step 2,finish
-        else if (check_and_cast<cMessage *>(msg))
+        else if (dynamic_cast<cMessage *>(msg))
         {
             if (strcmp(msg->getName(), "CARRIER_SENSE_WAIT") == 0)
             {
@@ -249,7 +249,7 @@ void Transceiver::handleMessage(cMessage *msg)
     case TXState:
     {
         // Transmit Path(TX State)step 1,go back to MAC
-        if (check_and_cast<TransmissionRequestMessage *>(msg))
+        if (dynamic_cast<TransmissionRequestMessage *>(msg))
         {
             delete msg;
             TransmissionConfirmMessage * tcMsg = new TransmissionConfirmMessage("statusBusy");
@@ -258,7 +258,7 @@ void Transceiver::handleMessage(cMessage *msg)
         }
 
         // Transmit Path(TX State)step 2,go on
-        else if (check_and_cast<MacMessage *>(msg))//mac message is received from itself after the turnaround time
+        else if (dynamic_cast<MacMessage *>(msg))//mac message is received from itself after the turnaround time
         {
             MacMessage *macMsg = static_cast<MacMessage *>(msg);
 
@@ -287,7 +287,7 @@ void Transceiver::handleMessage(cMessage *msg)
         }
 
         // Transmit Path(TX State)step 3,go on
-        else if (check_and_cast<cMessage *>(msg))
+        else if (dynamic_cast<cMessage *>(msg))
         {
             if (strcmp(msg->getName(), "STEP_3") == 0)
             {
@@ -301,7 +301,7 @@ void Transceiver::handleMessage(cMessage *msg)
         }
 
         // Transmit Path(TX State)step 4,finish
-        else if (check_and_cast<cMessage *>(msg))
+        else if (dynamic_cast<cMessage *>(msg))
         {
             if (strcmp(msg->getName(), "STEP_4") == 0)
             {
@@ -314,7 +314,7 @@ void Transceiver::handleMessage(cMessage *msg)
         }
 
         // Carrier Sense(TX State)step 2,finish
-        else if (check_and_cast<cMessage *>(msg))
+        else if (dynamic_cast<cMessage *>(msg))
         {
             if (strcmp(msg->getName(), "CARRIER_SENSE_WAIT") == 0)
             {

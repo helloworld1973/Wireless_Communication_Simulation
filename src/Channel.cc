@@ -25,7 +25,7 @@ void Channel::initialize()
 
 void Channel::handleMessage(cMessage *msg)
 {
-    if (check_and_cast<SignalStartMessage *>(msg))
+    if (dynamic_cast<SignalStartMessage *>(msg))
     {
         SignalStartMessage * startMsg = static_cast<SignalStartMessage *>(msg);
         for (int i = 0; i < numGates; i++)
@@ -36,7 +36,7 @@ void Channel::handleMessage(cMessage *msg)
         delete msg;
     }
 
-    else if (check_and_cast<SignalStopMessage *>(msg))
+    else if (dynamic_cast<SignalStopMessage *>(msg))
     {
         SignalStopMessage * stopMsg = static_cast<SignalStopMessage *>(msg);
         for (int i = 0; i < numGates; i++)

@@ -1,11 +1,32 @@
 network Simulation
 {
+    parameters:
+		int numTransmitters;
+		int radius;
+    
 	submodules:
-		TransmitterNodeModule[2] : TransmitterNode;
-		ReceiverNodeModule : ReceiverNode;
+		TransmitterNodeModule[numTransmitters] : TransmitterNode
+		{
+			nodeIdentifier = index;	
+			nodeXPosition = radius * cos(2 * 3.14159 * index / (numTransmitters));
+			nodeYPosition = radius * sin(2 * 3.14159 * index / (numTransmitters));
+			
+			@display("p=$nodeXPosition,$nodeYPosition");
+		};
+		ReceiverNodeModule : ReceiverNode
+		{
+			nodeIdentifier = -1;
+			nodeXPosition = 0;
+			nodeYPosition = 0;
+			
+			@display("p=$nodeXPosition,$nodeYPosition");
+		};
 		ChannelModule : Channel;
+
 	connections:
-	ReceiverNodeModule.gateForChnl <--> ChannelModule.gateNet++;
-	TransmitterNodeModule[0].gateForChnl <--> ChannelModule.gateNet++;
-	TransmitterNodeModule[1].gateForChnl <--> ChannelModule.gateNet++;
+		ChannelModule.gateNet++ <--> ReceiverNodeModule.gateForChnl;
+		for i=0..numTransmitters - 1 
+		{
+			ChannelModule.gateNet++ <--> TransmitterNodeModule[i].gateForChnl;
+		}
 }
