@@ -22,13 +22,12 @@ using namespace omnetpp;
 #include "SignalStartMessage_m.h"
 #include "SignalStopMessage_m.h"
 
-#define pathLossExponent 4.0f
-
 class Transceiver : public cSimpleModule
 {
 public:
     Transceiver();
     ~Transceiver();
+    int numOfPacketsTransmitted;
 
 protected:
     typedef enum
@@ -39,6 +38,7 @@ protected:
 
     virtual void initialize();
     virtual void handleMessage(cMessage *msg);
+    SignalStartMessage * updateCurrentTransmissions(SignalStopMessage *stopMsg);
 
     int txPowerDBm;
     int bitRate;
@@ -46,6 +46,7 @@ protected:
     int noisePowerDBm;
     double turnaroundTime;
     double csTime;
+    const double pathLossExponent=4.0;
 
     double total_power_db;//use to store channel's signal power
 
@@ -69,11 +70,18 @@ Transceiver::Transceiver()
 
 Transceiver::~Transceiver()
 {
-
+    FILE * filePointerToWrite = fopen("Data_Transmit.txt", "a");//Number of Packets transmitted VS number of Packets received
+    if (filePointerToWrite == NULL) return;
+    fprintf(filePointerToWrite, "TransceiverNode #         NumOfMessage Transmitted      Position(X.Y)\n");
+    fprintf(filePointerToWrite, "%d,                       %d,                           %d,%d\n",
+            nodeIdentifier, numOfPacketsTransmitted, nodeXPosition, nodeYPosition);
+    fclose(filePointerToWrite);
 }
 
 void Transceiver::initialize()
 {
+    numOfPacketsTransmitted = 0;//For experiment #1
+
     txPowerDBm = par("txPowerDBm");
     bitRate = par("bitRate");
     csThreshDBm = par("csThreshDBm");
@@ -115,7 +123,7 @@ void Transceiver::handleMessage(cMessage *msg)
 
 
     // Receive Path(SignalStart from the Channel)
-    if (dynamic_cast<SignalStartMessage *>(msg))
+    else if (dynamic_cast<SignalStartMessage *>(msg))
     {
         SignalStartMessage *startMsg = static_cast<SignalStartMessage *>(msg);
         if (!currentTransmissions.empty())//currentTransmission[] not empty
@@ -147,62 +155,47 @@ void Transceiver::handleMessage(cMessage *msg)
     else if (dynamic_cast<SignalStopMessage *>(msg))
     {
         SignalStopMessage *stopMsg = static_cast<SignalStopMessage *>(msg);
-        SignalStartMessage *startMsg;
-        int flagTemp=0;
-        for (auto it = currentTransmissions.begin(); it != currentTransmissions.end(); it++)
-            {
-                if ((*it)->getIdentifier() == stopMsg->getIdentifier())//find the corresponding SignalStartMessage with same identifier
-                {
-                    SignalStartMessage *startMsgTemp = *it;// get the SignalStartMessage
-                    startMsg = startMsgTemp;
-                    currentTransmissions.erase(it);// remove the SignalStartMessage from list
-                    flagTemp++;
-                    delete startMsgTemp;
-                }
-            }
-        if(flagTemp==0)
-            {
-                delete stopMsg;delete startMsg;
-                std::cout << "update SignalStopMessage to the CurrentTransmissions[] error !!!" << std::endl;
-                return;
-            }
-        else if(flagTemp==1)
-            {
-                delete stopMsg;
-                if (startMsg->getCollidedFlag())//the collided flag is true
-                {
-                    delete startMsg;
-                    return;//no further action
-                }
-                else
-                {
-                    MacMessage *mpkt = static_cast<MacMessage *>(startMsg->decapsulate());// extract mac packet
-                    double received_power_db = getReceivedPowerDBm(startMsg);// calculate the received power in dBm
+        SignalStartMessage *startMsg=updateCurrentTransmissions(stopMsg);
+        delete stopMsg;delete msg;
+        if(startMsg==NULL)
+        {
+            delete startMsg;
+            return;
+        }
 
-                    double bit_rate_db = 10 * log10(bitRate);// -> dB domain
-                    double snr_db = received_power_db - (noisePowerDBm + bit_rate_db);//calculate signal-to-noise ratio(SNR)
-                    double snr_n = pow(10, snr_db/10);// -> normal domain
-                    double bit_error_rate = erfc(sqrt(2 * snr_n));// calculate bit error rate
-                    int packet_length = 8 * static_cast<AppMessage *>(mpkt->getEncapsulatedPacket())->getMsgSize();//get packet length(1byte=8bits)
-                    double packet_error_rate = 1 - pow((1 - bit_error_rate), packet_length);// calculate packet error rate(PER=1-(1-BER)^n)
+        if (startMsg->getCollidedFlag())//the collided flag is true
+        {
+            delete startMsg;
+            return;//no further action
+        }
+        else
+        {
+            MacMessage *mpkt = static_cast<MacMessage *>(startMsg->decapsulate());// extract mac packet
+            double received_power_db = getReceivedPowerDBm(startMsg);// calculate the received power in dBm
 
-                    srand(time(NULL));
-                    double u = (rand()%100)*0.01;//random num(0-1)( two numbers to the right of the decimal)
-                    if (u < packet_error_rate)
-                    {
-                        delete mpkt;
-                    }
-                    else
-                    {
-                        TransmissionIndicationMessage * tiMsg = new TransmissionIndicationMessage;
-                        tiMsg->encapsulate(mpkt);
-                        send(tiMsg, "gateForMAC$o");//send encapsulated MacMessage to higher layer
-                        mpkt = nullptr;
-                    }
-                    delete startMsg;
-                    return;
-                }
+            double bit_rate_db = 10 * log10(bitRate);// -> dB domain
+            double snr_db = received_power_db - (noisePowerDBm + bit_rate_db);//calculate signal-to-noise ratio(SNR)
+            double snr_n = pow(10, snr_db/10);// -> normal domain
+            double bit_error_rate = erfc(sqrt(2 * snr_n));// calculate bit error rate
+            int packet_length = 8 * static_cast<AppMessage *>(mpkt->getEncapsulatedPacket())->getMsgSize();//get packet length(1byte=8bits)
+            double packet_error_rate = 1 - pow((1 - bit_error_rate), packet_length);// calculate packet error rate(PER=1-(1-BER)^n)
+
+            srand(time(NULL));
+            double u = (rand()%100)*0.01;//random num(0-1)( two numbers to the right of the decimal)
+            if (u < packet_error_rate)
+            {
+                delete mpkt;
             }
+            else
+            {
+                TransmissionIndicationMessage * tiMsg = new TransmissionIndicationMessage;
+                tiMsg->encapsulate(mpkt);
+                send(tiMsg, "gateForMAC$o");//send encapsulated MacMessage to higher layer
+                delete mpkt;
+            }
+            delete startMsg;
+            return;
+        }
     }
 
 
@@ -293,7 +286,6 @@ void Transceiver::handleMessage(cMessage *msg)
             {
                 delete msg;
                 SignalStopMessage *stopMsg = new SignalStopMessage;
-                int nodeIdentifier = getParentModule()->par("nodeIdentifier");
                 stopMsg->setIdentifier(nodeIdentifier);// set identifier
                 send(stopMsg, "gateForTXRXNode$o");// send the message to the channel
                 scheduleAt(simTime() + turnaroundTime, new cMessage("STEP_4"));//
@@ -354,7 +346,7 @@ double Transceiver::getReceivedPowerDBm(SignalStartMessage *startMsg)
     }
     else
     {
-        path_loss_ratio = pow(dist, pathLossExponent);
+        path_loss_ratio = pow(dist, pathLossExponent);//dist^pathLossExponent
     }
 
     double path_loss_db = 10 * log10(path_loss_ratio);    // convert the path loss ratio into decibal
@@ -362,4 +354,19 @@ double Transceiver::getReceivedPowerDBm(SignalStartMessage *startMsg)
     double receivedPowerDBm = transmitPowerDBm - path_loss_db;// calculate received power
 
     return receivedPowerDBm;
+}
+
+SignalStartMessage * Transceiver::updateCurrentTransmissions(SignalStopMessage *stopMsg)
+{
+    for (auto it = currentTransmissions.begin(); it != currentTransmissions.end(); it++)
+    {
+        if ((*it)->getIdentifier() == stopMsg->getIdentifier())
+        {
+            SignalStartMessage *startMsg = *it;
+            currentTransmissions.erase(it);
+            return startMsg;
+        }
+    }
+    std::cout << "update SignalStopMessage to the CurrentTransmissions[] error !!!" << std::endl;
+    return NULL;
 }

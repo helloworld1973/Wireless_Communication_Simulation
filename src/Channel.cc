@@ -46,10 +46,4 @@ void Channel::handleMessage(cMessage *msg)
         }
         delete msg;
     }
-
-    else
-    {
-        delete msg;
-    }
-
 }

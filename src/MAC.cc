@@ -154,8 +154,10 @@ void MAC::handleMessage(cMessage *msg)
 
         send(appMsg, "gateForPacket$o");// send it to higher layer
 
+        delete appMsg;
         delete macMsg;
         delete thlMsg;
+        delete msg;
     }
 
 
@@ -201,6 +203,7 @@ void MAC::handleMessage(cMessage *msg)
             trMsg->encapsulate(mmsg);
             send(trMsg, "gateForTX$o");
 
+           // delete appMsg;
             appMsg = nullptr;
             mmsg = nullptr;
 

@@ -36,6 +36,7 @@ OBJS = \
     $O/PacketSink.o \
     $O/Transceiver.o \
     $O/AppMessage_m.o \
+    $O/CSMAInternalMessage_m.o \
     $O/CSRequestMessage_m.o \
     $O/CSResponseMessage_m.o \
     $O/MacMessage_m.o \
@@ -48,6 +49,7 @@ OBJS = \
 # Message files
 MSGFILES = \
     AppMessage.msg \
+    CSMAInternalMessage.msg \
     CSRequestMessage.msg \
     CSResponseMessage.msg \
     MacMessage.msg \
@@ -150,6 +152,8 @@ depend:
 # DO NOT DELETE THIS LINE -- make depend depends on it.
 $O/AppMessage_m.o: AppMessage_m.cc \
 	AppMessage_m.h
+$O/CSMAInternalMessage_m.o: CSMAInternalMessage_m.cc \
+	CSMAInternalMessage_m.h
 $O/CSRequestMessage_m.o: CSRequestMessage_m.cc \
 	CSRequestMessage_m.h
 $O/CSResponseMessage_m.o: CSResponseMessage_m.cc \

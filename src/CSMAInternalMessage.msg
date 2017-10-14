@@ -1,0 +1,4 @@
+packet CSMAInternalMessage
+{
+    double totalPower;
+}
