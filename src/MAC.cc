@@ -87,7 +87,6 @@ void MAC::handleMessage(cMessage *msg)
         {
             macBuffer.push_back(appMsg);
         }
-
     }
 
 
@@ -195,7 +194,6 @@ void MAC::handleMessage(cMessage *msg)
         }
         case TRANSMIT_START:
         {
-            // CSResponse is received and the channel is clear to transmit
             AppMessage *appMsg = new AppMessage(*macBuffer.front()); //extract the oldest message from buffer
             MacMessage *mmsg = new MacMessage;
             mmsg->encapsulate(appMsg);
@@ -206,15 +204,14 @@ void MAC::handleMessage(cMessage *msg)
             appMsg=nullptr ;
             mmsg=nullptr;
 
-
             MACState = TRANSMIT_WAITING;
             break;
         }
         case TRANSMIT_OVER:
         {
-            //AppMessage *appMsg = macBuffer.front();
+            AppMessage *appMsg = macBuffer.front();
             macBuffer.pop_front();
-            //delete appMsg;
+            delete appMsg;
             MACState = IDLE;
             break;
         }

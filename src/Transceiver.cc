@@ -70,12 +70,12 @@ Transceiver::Transceiver()
 
 Transceiver::~Transceiver()
 {
-   // FILE * filePointerToWrite = fopen("Data_Transmit.txt", "a");//Number of Packets transmitted VS number of Packets received
-   // if (filePointerToWrite == NULL) return;
-   // fprintf(filePointerToWrite, "TransceiverNode #         NumOfMessage Transmitted      Position(X.Y)\n");
-   // fprintf(filePointerToWrite, "%d,                       %d,                           %d,%d\n",
-   //         nodeIdentifier, numOfPacketsTransmitted, nodeXPosition, nodeYPosition);
-   // fclose(filePointerToWrite);
+    // FILE * filePointerToWrite = fopen("Data_Transmit.txt", "a");//Number of Packets transmitted VS number of Packets received
+    // if (filePointerToWrite == NULL) return;
+    // fprintf(filePointerToWrite, "TransceiverNode #         NumOfMessage Transmitted      Position(X.Y)\n");
+    // fprintf(filePointerToWrite, "%d,                       %d,                           %d,%d\n",
+    //         nodeIdentifier, numOfPacketsTransmitted, nodeXPosition, nodeYPosition);
+    // fclose(filePointerToWrite);
 }
 
 void Transceiver::initialize()
@@ -278,15 +278,17 @@ void Transceiver::handleMessage(cMessage *msg)
             // encapsulate the mac message
             startMsg->encapsulate(macMsg);
 
-
             // send the message to the channel
             send(startMsg, "gateForTXRXNode$o");
 
-            // wait for the end of the packet transmission
-            scheduleAt(simTime() + packet_length / bitRate, new cMessage("STEP_3"));
             macMsg = nullptr;
             msg=nullptr;
             delete msg;
+
+            // wait for the end of the packet transmission
+            scheduleAt(simTime() + packet_length / bitRate, new cMessage("STEP_3"));
+
+
         }
 
         // Transmit Path(TX State)step 3,go on
@@ -300,12 +302,8 @@ void Transceiver::handleMessage(cMessage *msg)
                 send(stopMsg, "gateForTXRXNode$o");// send the message to the channel
                 scheduleAt(simTime() + turnaroundTime, new cMessage("STEP_4"));//
             }
-        }
-
-        // Transmit Path(TX State)step 4,finish
-        else if (dynamic_cast<cMessage *>(msg))
-        {
-            if (strcmp(msg->getName(), "STEP_4") == 0)
+            // Transmit Path(TX State)step 4,finish
+            else if (strcmp(msg->getName(), "STEP_4") == 0)
             {
                 delete msg;
                 transceiverState = RXState;//TXState -> RXState
@@ -313,12 +311,8 @@ void Transceiver::handleMessage(cMessage *msg)
                 tcMsg->setStatus("statusOK");
                 send(tcMsg, "gateForMAC$o");
             }
-        }
-
-        // Carrier Sense(TX State)step 2,finish
-        else if (dynamic_cast<cMessage *>(msg))
-        {
-            if (strcmp(msg->getName(), "CARRIER_SENSE_WAIT") == 0)
+            // Carrier Sense(TX State)step 2,finish
+            else if (strcmp(msg->getName(), "CARRIER_SENSE_WAIT") == 0)
             {
                 delete msg;
                 CSResponseMessage *crMsg = new CSResponseMessage;
@@ -326,7 +320,6 @@ void Transceiver::handleMessage(cMessage *msg)
                 send(crMsg, "gateForMAC$o");
             }
         }
-
         else//unknown message
         {
             delete msg;
