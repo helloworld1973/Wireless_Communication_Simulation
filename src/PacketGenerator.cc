@@ -42,7 +42,7 @@ void PacketGenerator::initialize()
 
     senderId = getParentModule()->par("nodeIdentifier");//from TransmitterNode's identifier
 
-    scheduleAt(simTime() + iatDistribution, new cMessage("SCHEDULE"));// sends the message to itself for simulating inter-generation time
+    scheduleAt(simTime() + iatDistribution, new cMessage("START"));// sends the message to itself for simulating inter-generation time
 
 }
 
@@ -54,11 +54,11 @@ void PacketGenerator::handleMessage(cMessage *msg)
     }
     else
     {
-        if (strcmp(msg->getName(), "SCHEDULE") == 0)//from PacketGenerator itself
+        if (strcmp(msg->getName(), "START") == 0)//from PacketGenerator itself
         {
             AppMessage * appMsg = generateMessage();// create a new AppMessage
             send(appMsg, "gate$o");// send the message
-            scheduleAt(simTime() + iatDistribution, new cMessage("SCHEDULE"));// schedule the next transmission
+            scheduleAt(simTime() + iatDistribution, new cMessage("START"));// schedule the next transmission
         }
         delete msg;
     }

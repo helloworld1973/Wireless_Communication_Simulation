@@ -103,17 +103,14 @@ void MAC::handleMessage(cMessage *msg)
             if (backoffCounter < maxBackoffs)//still can do carrier sense retry
             {
                 // wait for a random time for next carrier sense
-                scheduleAt(simTime() + backoffDistribution, new cMessage("CS_WAITING"));
-
+                scheduleAt(simTime() + backoffDistribution, new cMessage("CS_Retry"));
                 MACState = CS_WAITING;//reset the state
             }
             else//reach the max carrier sense retry times
             {
                 AppMessage *appMsg = macBuffer.front();
-                macBuffer.pop_front();
-                delete appMsg;//drop the current AppMessage
-
-                // cancel the current transmission
+                macBuffer.pop_front();//drop the first packect in macBuffer
+                delete appMsg;// cancel the schedule for current packet transmission
                 MACState = IDLE;
             }
         }
@@ -165,7 +162,7 @@ void MAC::handleMessage(cMessage *msg)
     else if((dynamic_cast<cMessage *>(msg)))
     {
         //get the packet from itself,simulate as waiting for time for next carrier sensing procedure
-        if (strcmp(msg->getName(), "CS_WAITING") == 0)
+        if (strcmp(msg->getName(), "CS_Retry") == 0)
         {
             MACState = CS_RETRY;
         }
@@ -175,9 +172,9 @@ void MAC::handleMessage(cMessage *msg)
 
     switch (MACState)//MAC finite state machine(CSMA)
     {
-        case IDLE://IDLE means there is no packet in the macBuffer
+        case IDLE:
         {
-            if (!macBuffer.empty())//if packets arrive in the macBuffer, then MAC have to process.
+            if (!macBuffer.empty())//macBuffer is not empty
             {
                 backoffCounter = 0;// reset the backoff counter
                 CSRequestMessage *csMsg = new CSRequestMessage;// start the carrier sensing procedure
@@ -203,19 +200,20 @@ void MAC::handleMessage(cMessage *msg)
             trMsg->encapsulate(mmsg);
             send(trMsg, "gateForTX$o");
 
-           // delete appMsg;
-            appMsg = nullptr;
-            mmsg = nullptr;
+            delete appMsg;
+            delete mmsg;
+            delete trMsg;
 
             MACState = TRANSMIT_WAITING;
             break;
         }
         case TRANSMIT_OVER:
         {
-            AppMessage *appMsg = macBuffer.front();
+            //AppMessage *appMsg = macBuffer.front();
             macBuffer.pop_front();
-            delete appMsg;
+            //delete appMsg;
             MACState = IDLE;
+            break;
         }
         case CS_WAITING:break;
         case TRANSMIT_WAITING:break;
