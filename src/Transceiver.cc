@@ -70,12 +70,12 @@ Transceiver::Transceiver()
 
 Transceiver::~Transceiver()
 {
-    FILE * filePointerToWrite = fopen("Data_Transmit.txt", "a");//Number of Packets transmitted VS number of Packets received
-    if (filePointerToWrite == NULL) return;
-    fprintf(filePointerToWrite, "TransceiverNode #         NumOfMessage Transmitted      Position(X.Y)\n");
-    fprintf(filePointerToWrite, "%d,                       %d,                           %d,%d\n",
-            nodeIdentifier, numOfPacketsTransmitted, nodeXPosition, nodeYPosition);
-    fclose(filePointerToWrite);
+   // FILE * filePointerToWrite = fopen("Data_Transmit.txt", "a");//Number of Packets transmitted VS number of Packets received
+   // if (filePointerToWrite == NULL) return;
+   // fprintf(filePointerToWrite, "TransceiverNode #         NumOfMessage Transmitted      Position(X.Y)\n");
+   // fprintf(filePointerToWrite, "%d,                       %d,                           %d,%d\n",
+   //         nodeIdentifier, numOfPacketsTransmitted, nodeXPosition, nodeYPosition);
+   // fclose(filePointerToWrite);
 }
 
 void Transceiver::initialize()
@@ -156,7 +156,9 @@ void Transceiver::handleMessage(cMessage *msg)
     {
         SignalStopMessage *stopMsg = static_cast<SignalStopMessage *>(msg);
         SignalStartMessage *startMsg=updateCurrentTransmissions(stopMsg);
-        delete stopMsg;delete msg;
+        delete stopMsg;
+        msg=nullptr;
+        delete msg;
         if(startMsg==NULL)
         {
             delete startMsg;
@@ -184,6 +186,7 @@ void Transceiver::handleMessage(cMessage *msg)
             double u = (rand()%100)*0.01;//random num(0-1)( two numbers to the right of the decimal)
             if (u < packet_error_rate)
             {
+                mpkt=nullptr;
                 delete mpkt;
             }
             else
@@ -191,8 +194,10 @@ void Transceiver::handleMessage(cMessage *msg)
                 TransmissionIndicationMessage * tiMsg = new TransmissionIndicationMessage;
                 tiMsg->encapsulate(mpkt);
                 send(tiMsg, "gateForMAC$o");//send encapsulated MacMessage to higher layer
+                mpkt=nullptr;
                 delete mpkt;
             }
+            startMsg=nullptr;
             delete startMsg;
             return;
         }
@@ -209,9 +214,11 @@ void Transceiver::handleMessage(cMessage *msg)
         {
             TransmissionRequestMessage *trMsg = static_cast<TransmissionRequestMessage *>(msg);
             MacMessage *macMsg = static_cast<MacMessage *>(trMsg->decapsulate());
-            delete trMsg;
             transceiverState = TXState;//RXState -> TXState
             scheduleAt(simTime() + turnaroundTime, macMsg);// wait for the TurnaroundTime
+
+            delete trMsg;
+
         }
         // Carrier Sense(RX State)step 2,finish
         else if (dynamic_cast<cMessage *>(msg))
@@ -270,13 +277,16 @@ void Transceiver::handleMessage(cMessage *msg)
 
             // encapsulate the mac message
             startMsg->encapsulate(macMsg);
-            macMsg = nullptr;
+
 
             // send the message to the channel
             send(startMsg, "gateForTXRXNode$o");
 
             // wait for the end of the packet transmission
             scheduleAt(simTime() + packet_length / bitRate, new cMessage("STEP_3"));
+            macMsg = nullptr;
+            msg=nullptr;
+            delete msg;
         }
 
         // Transmit Path(TX State)step 3,go on

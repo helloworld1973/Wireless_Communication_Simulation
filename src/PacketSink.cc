@@ -55,7 +55,11 @@ void PacketSink::handleMessage(cMessage *msg)
     	AppMessage *appMsg = static_cast<AppMessage *>(msg);
     	simtime_t timeStamp = simTime();//current simulation time
     	fprintf(filePointer, "%d,      %f,      %f,      %d,      %d,      %d\n",
-             numOfPackets, timeStamp.dbl() , SIMTIME_DBL(appMsg->getTimeStamp()), appMsg->getSenderId(), appMsg->getSequenceNumber(), appMsg->getMsgSize());
+             numOfPackets, timeStamp.dbl() ,
+             appMsg->getTimeStamp(),
+             appMsg->getSenderId(),
+             appMsg->getSequenceNumber(),
+             appMsg->getMsgSize());
      
       numOfPackets++;
       delete msg;

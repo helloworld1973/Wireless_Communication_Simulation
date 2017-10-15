@@ -49,13 +49,12 @@ MAC::MAC()
 
 MAC::~MAC()
 {
-    // dump all packets in the queue
     while (macBuffer.size() > 0)
     {
         AppMessage *appMsg = macBuffer.front();
         macBuffer.pop_front();
         delete appMsg;
-    }
+    }//clear all memory space
 }
 
 void MAC::initialize()
@@ -88,6 +87,7 @@ void MAC::handleMessage(cMessage *msg)
         {
             macBuffer.push_back(appMsg);
         }
+
     }
 
 
@@ -118,6 +118,7 @@ void MAC::handleMessage(cMessage *msg)
         {
             MACState = TRANSMIT_START;
         }
+
         delete msg;//delete the CSResponseMessage
     }
 
@@ -151,9 +152,10 @@ void MAC::handleMessage(cMessage *msg)
 
         send(appMsg, "gateForPacket$o");// send it to higher layer
 
-        delete appMsg;
+
         delete macMsg;
         delete thlMsg;
+        msg=nullptr;
         delete msg;
     }
 
@@ -180,6 +182,7 @@ void MAC::handleMessage(cMessage *msg)
                 CSRequestMessage *csMsg = new CSRequestMessage;// start the carrier sensing procedure
                 send(csMsg, "gateForTX$o");
                 MACState = CS_WAITING;
+                csMsg=nullptr;
             }
             break;
         }
@@ -200,9 +203,9 @@ void MAC::handleMessage(cMessage *msg)
             trMsg->encapsulate(mmsg);
             send(trMsg, "gateForTX$o");
 
-            delete appMsg;
-            delete mmsg;
-            delete trMsg;
+            appMsg=nullptr ;
+            mmsg=nullptr;
+
 
             MACState = TRANSMIT_WAITING;
             break;
