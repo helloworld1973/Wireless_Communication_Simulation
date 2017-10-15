@@ -19,8 +19,10 @@ protected:
     virtual void handleMessage(cMessage *msg);
 
     std::string fileName;
+    char* fileNameChar;
+
     int numOfPackets;
-    FILE * filePointer;
+
 };
 Define_Module(PacketSink);
 
@@ -31,15 +33,15 @@ PacketSink::PacketSink()
 
 PacketSink::~PacketSink()
 {  
-	 fclose(filePointer);     
+
 }
 
 void PacketSink::initialize()
 {
-	fileName=par("fileName").str();
-	char* fileNameChar=(char*)fileName.data();
+	fileName=par("fileName").stdstringValue();
+	fileNameChar=(char*)fileName.data();
     numOfPackets = 0;
-    filePointer = fopen(fileNameChar, "a");
+    FILE * filePointer= fopen(fileNameChar, "a");
     if (filePointer != NULL)
     {
         fprintf(filePointer, "Index      ReceivedTimeStamp      GeneratedTimeStamp      SenderID      sequenceNumber      msgSize\n");
@@ -54,15 +56,18 @@ void PacketSink::handleMessage(cMessage *msg)
     if (check_and_cast<AppMessage *>(msg))
     {
     	AppMessage *appMsg = static_cast<AppMessage *>(msg);
-    	//simtime_t timeStamp = simTime();//current simulation time
-    	char* fileNameChar=(char*)fileName.data();
-    	filePointer = fopen(fileNameChar, "a");
-    	fprintf(filePointer, "%d,     %d,      %d,      %d\n",
-             numOfPackets,  appMsg->getSenderId(), appMsg->getSequenceNumber(), appMsg->getMsgSize());
-                                          //change (simtime_t) to (double)
+    	simtime_t timeStampReceive = simTime();//current simulation time
+    	simtime_t timeStampSend=appMsg->getTimeStamp();
+        int sendId=appMsg->getSenderId();
+        int seqNum=appMsg->getSequenceNumber();
+        int msgSize=appMsg->getMsgSize();
+
+        FILE * filePointer= fopen(fileNameChar, "a");
+    	fprintf(filePointer,"%d,      %f,      %f,      %d,      %d,      %d\n",
+                      numOfPackets, timeStampReceive.dbl(), timeStampSend.dbl(), sendId, seqNum, msgSize);
+
         numOfPackets++;
         delete msg;
         fclose(filePointer);
-
     }
 }

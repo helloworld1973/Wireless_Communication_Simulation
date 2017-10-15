@@ -1,0 +1,6 @@
+Index      ReceivedTimeStamp      GeneratedTimeStamp      SenderID      sequenceNumber      msgSize
+0,      0.010000,      0.010000,      0,      0,      64
+1,      0.020000,      0.020000,      0,      1,      64
+2,      0.030000,      0.030000,      0,      2,      64
+3,      0.040000,      0.040000,      0,      3,      64
+4,      0.050000,      0.050000,      0,      4,      64
