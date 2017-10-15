@@ -1,2 +1,0 @@
-ReceiverNode #           NumOfMessage Received         Position(X.Y)
--1,                      0,                           0,0
