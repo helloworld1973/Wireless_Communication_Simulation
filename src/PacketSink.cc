@@ -16,11 +16,12 @@ public:
 
 protected:
     virtual void initialize();
+    virtual void finish();
     virtual void handleMessage(cMessage *msg);
 
     std::string fileName;
     char* fileNameChar;
-
+    FILE * filePointer;
     int numOfPackets;
 
 };
@@ -35,19 +36,23 @@ PacketSink::~PacketSink()
 {  
 
 }
+void PacketSink::finish()
+{
+    fclose(filePointer);
+}
 
 void PacketSink::initialize()
 {
 	fileName=par("fileName").stdstringValue();
 	fileNameChar=(char*)fileName.data();
     numOfPackets = 0;
-    FILE * filePointer= fopen(fileNameChar, "a");
+    filePointer= fopen(fileNameChar, "a");
     if (filePointer != NULL)
     {
         fprintf(filePointer, "Index      ReceivedTimeStamp      GeneratedTimeStamp      SenderID      sequenceNumber      msgSize\n");
         //fclose(filePointer);
     }
-    fclose(filePointer);
+    //fclose(filePointer);
 }
 
 
@@ -62,12 +67,12 @@ void PacketSink::handleMessage(cMessage *msg)
         int seqNum=appMsg->getSequenceNumber();
         int msgSize=appMsg->getMsgSize();
 
-        FILE * filePointer= fopen(fileNameChar, "a");
+        //FILE * filePointer= fopen(fileNameChar, "a");
     	fprintf(filePointer,"%d,      %f,      %f,      %d,      %d,      %d\n",
                       numOfPackets, timeStampReceive.dbl(), timeStampSend.dbl(), sendId, seqNum, msgSize);
 
         numOfPackets++;
         delete msg;
-        fclose(filePointer);
+        //fclose(filePointer);
     }
 }

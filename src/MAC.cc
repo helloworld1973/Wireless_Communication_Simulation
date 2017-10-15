@@ -151,11 +151,9 @@ void MAC::handleMessage(cMessage *msg)
 
         send(appMsg, "gateForPacket$o");// send it to higher layer
 
-
-        delete macMsg;
         delete thlMsg;
-        msg=nullptr;
-        delete msg;
+        delete macMsg;
+
     }
 
 
@@ -181,7 +179,7 @@ void MAC::handleMessage(cMessage *msg)
                 CSRequestMessage *csMsg = new CSRequestMessage;// start the carrier sensing procedure
                 send(csMsg, "gateForTX$o");
                 MACState = CS_WAITING;
-                csMsg=nullptr;
+
             }
             break;
         }
@@ -200,9 +198,6 @@ void MAC::handleMessage(cMessage *msg)
             TransmissionRequestMessage *trMsg = new TransmissionRequestMessage;
             trMsg->encapsulate(mmsg);
             send(trMsg, "gateForTX$o");
-
-            appMsg=nullptr ;
-            mmsg=nullptr;
 
             MACState = TRANSMIT_WAITING;
             break;

@@ -157,11 +157,9 @@ void Transceiver::handleMessage(cMessage *msg)
         SignalStopMessage *stopMsg = static_cast<SignalStopMessage *>(msg);
         SignalStartMessage *startMsg=updateCurrentTransmissions(stopMsg);
         delete stopMsg;
-        msg=nullptr;
-        delete msg;
+
         if(startMsg==NULL)
         {
-            delete startMsg;
             return;
         }
 
@@ -174,7 +172,7 @@ void Transceiver::handleMessage(cMessage *msg)
         {
             MacMessage *mpkt = static_cast<MacMessage *>(startMsg->decapsulate());// extract mac packet
             double received_power_db = getReceivedPowerDBm(startMsg);// calculate the received power in dBm
-
+            delete startMsg;
             double bit_rate_db = 10 * log10(bitRate);// -> dB domain
             double snr_db = received_power_db - (noisePowerDBm + bit_rate_db);//calculate signal-to-noise ratio(SNR)
             double snr_n = pow(10, snr_db/10);// -> normal domain
@@ -186,7 +184,7 @@ void Transceiver::handleMessage(cMessage *msg)
             double u = (rand()%100)*0.01;//random num(0-1)( two numbers to the right of the decimal)
             if (u < packet_error_rate)
             {
-                mpkt=nullptr;
+
                 delete mpkt;
             }
             else
@@ -194,11 +192,11 @@ void Transceiver::handleMessage(cMessage *msg)
                 TransmissionIndicationMessage * tiMsg = new TransmissionIndicationMessage;
                 tiMsg->encapsulate(mpkt);
                 send(tiMsg, "gateForMAC$o");//send encapsulated MacMessage to higher layer
-                mpkt=nullptr;
-                delete mpkt;
+
+
             }
-            startMsg=nullptr;
-            delete startMsg;
+
+
             return;
         }
     }
@@ -280,10 +278,6 @@ void Transceiver::handleMessage(cMessage *msg)
 
             // send the message to the channel
             send(startMsg, "gateForTXRXNode$o");
-
-            macMsg = nullptr;
-            msg=nullptr;
-            delete msg;
 
             // wait for the end of the packet transmission
             scheduleAt(simTime() + packet_length / bitRate, new cMessage("STEP_3"));
