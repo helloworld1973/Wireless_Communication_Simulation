@@ -45,8 +45,8 @@ void PacketGenerator::finish()
     int nodeYPosition = getParentModule()->par("nodeYPosition");
     int nodeIdentifier = getParentModule()->par("nodeIdentifier");
 
-    fprintf(filePointerToWrite, "TransceiverNode          NumOfPacketGeneratorPackets        Position(X.Y)\n");
-    fprintf(filePointerToWrite, "%d,                       %d,                           %d,%d\n",
+    fprintf(filePointerToWrite, "TransceiverNode          NumOfPacketGeneratorPackets        Position\n");
+    fprintf(filePointerToWrite, "%d,                       %d,                               %d,%d\n",
             nodeIdentifier, numOfPacketsGenerated, nodeXPosition, nodeYPosition);
     fclose(filePointerToWrite);
 

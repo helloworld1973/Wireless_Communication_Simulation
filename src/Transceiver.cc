@@ -79,9 +79,9 @@ void Transceiver::finish()
     if (filePointerToWrite == NULL) return;
 
 
-    fprintf(filePointerToWrite, "TransceiverNode          NumOfTxToChannelPackets           NumOfLostInChannelPackets           Position(X.Y)\n");
-    fprintf(filePointerToWrite, "%d,                       %d,                           %d,%d\n",
-            nodeIdentifier, numOfTxToChannelPackets,numOfLostInChannelPackets, nodeXPosition, nodeYPosition);
+    fprintf(filePointerToWrite, "TxOrRxNode               NumOfTxToChannelPackets           NumOfLostInChannelPackets           Position\n");
+    fprintf(filePointerToWrite, "%d,                       %d,                               %d,                                    %d,%d\n",
+                   nodeIdentifier, numOfTxToChannelPackets,numOfLostInChannelPackets, nodeXPosition, nodeYPosition);
     fclose(filePointerToWrite);
 }
 

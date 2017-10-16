@@ -71,8 +71,8 @@ void MAC::finish()
     int nodeIdentifier = getParentModule()->par("nodeIdentifier");
 
 
-    fprintf(filePointerToWrite, "TransceiverNode            NumOfMacBufferDropPackets(full)             NumOfMacBufferDropPackets(CSoverTime)              Position(X.Y)\n");
-    fprintf(filePointerToWrite, "%d,                         %d,                       %d,                      %d,%d\n",
+    fprintf(filePointerToWrite, "TxOrRxNode            NumOfMacBufferDropPackets(full)             NumOfMacBufferDropPackets(CSoverTime)              Position\n");
+    fprintf(filePointerToWrite, "%d,                         %d,                                        %d,                                                %d,%d\n",
             nodeIdentifier, numOfMacBufferFullDropPackets,numOfMacBufferCSOverTime, nodeXPosition, nodeYPosition);
 
     fclose(filePointerToWrite);

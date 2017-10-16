@@ -50,8 +50,8 @@ void PacketSink::finish()
     int nodeIdentifier = getParentModule()->par("nodeIdentifier");
 
 
-    fprintf(filePointerToWrite, "ReceiverNode           NumOfPacketsReceived         Position(X.Y)\n");
-    fprintf(filePointerToWrite, "%d,                      %d,                           %d,%d\n",
+    fprintf(filePointerToWrite, "ReceiverNode           NumOfPacketsReceived         Position\n");
+    fprintf(filePointerToWrite, "%d,                     %d,                           %d,%d\n",
             nodeIdentifier, numOfPacketsReceived, nodeXPosition, nodeYPosition);
 
     fclose(filePointerToWrite);
