@@ -15,31 +15,34 @@ using namespace omnetpp;
 
 class MAC : public cSimpleModule
 {
-    public:
-        MAC();
-        ~MAC();
+public:
+    MAC();
+    ~MAC();
+    int numOfMacBufferFullDropPackets;
+    int numOfMacBufferCSOverTime;
 
-    protected:
-        virtual void initialize();
-        virtual void handleMessage(cMessage *msg);
+protected:
+    virtual void finish();
+    virtual void initialize();
+    virtual void handleMessage(cMessage *msg);
 
-        typedef enum
-        {
-            IDLE,
-            CS_RETRY,
-            CS_WAITING,
-            TRANSMIT_START,
-            TRANSMIT_WAITING,
-            TRANSMIT_OVER
-        } MACState_t;//treat MAC as a finite state machine as well
+    typedef enum
+    {
+        IDLE,
+        CS_RETRY,
+        CS_WAITING,
+        TRANSMIT_START,
+        TRANSMIT_WAITING,
+        TRANSMIT_OVER
+    } MACState_t;//treat MAC as a finite state machine as well
 
-        MACState_t MACState;
-        int bufferSize;
-        int maxBackoffs;
-        double backoffDistribution;
+    MACState_t MACState;
+    int bufferSize;
+    int maxBackoffs;
+    double backoffDistribution;
 
-        std::deque<AppMessage *> macBuffer;
-        int backoffCounter;//local variable
+    std::deque<AppMessage *> macBuffer;
+    int backoffCounter;//local variable
 };
 Define_Module(MAC);
 
@@ -57,8 +60,29 @@ MAC::~MAC()
     }//clear all memory space
 }
 
+void MAC::finish()
+{
+    //#exp2
+    FILE * filePointerToWrite = fopen("MacBuffferDropDataNum.txt", "a");
+    if (filePointerToWrite == NULL) return;
+
+    int nodeXPosition = getParentModule()->par("nodeXPosition");
+    int nodeYPosition = getParentModule()->par("nodeYPosition");
+    int nodeIdentifier = getParentModule()->par("nodeIdentifier");
+
+
+    fprintf(filePointerToWrite, "TransceiverNode            NumOfMacBufferDropPackets(full)             NumOfMacBufferDropPackets(CSoverTime)              Position(X.Y)\n");
+    fprintf(filePointerToWrite, "%d,                         %d,                       %d,                      %d,%d\n",
+            nodeIdentifier, numOfMacBufferFullDropPackets,numOfMacBufferCSOverTime, nodeXPosition, nodeYPosition);
+
+    fclose(filePointerToWrite);
+}
+
 void MAC::initialize()
 {
+    numOfMacBufferFullDropPackets = 0;
+    numOfMacBufferCSOverTime = 0;
+
     bufferSize = par("bufferSize");
     maxBackoffs = par("maxBackoffs");
     backoffDistribution = par("backoffDistribution");
@@ -81,6 +105,7 @@ void MAC::handleMessage(cMessage *msg)
         // add packet in the end of macBuffer,  if the buffer is full, then drop the packet
         if (macBuffer.size() == bufferSize)
         {
+            numOfMacBufferFullDropPackets++;
             delete appMsg;
         }
         else
@@ -111,6 +136,7 @@ void MAC::handleMessage(cMessage *msg)
                 macBuffer.pop_front();//drop the first packect in macBuffer
                 delete appMsg;// cancel the schedule for current packet transmission
                 MACState = IDLE;
+                numOfMacBufferCSOverTime++;
             }
         }
         else//the carrier is idle, transmit
@@ -171,46 +197,46 @@ void MAC::handleMessage(cMessage *msg)
 
     switch (MACState)//MAC finite state machine(CSMA)
     {
-        case IDLE:
+    case IDLE:
+    {
+        if (!macBuffer.empty())//macBuffer is not empty
         {
-            if (!macBuffer.empty())//macBuffer is not empty
-            {
-                backoffCounter = 0;// reset the backoff counter
-                CSRequestMessage *csMsg = new CSRequestMessage;// start the carrier sensing procedure
-                send(csMsg, "gateForTX$o");
-                MACState = CS_WAITING;
-
-            }
-            break;
-        }
-        case CS_RETRY:
-        {
-            CSRequestMessage *csMsg = new CSRequestMessage; // start the carrier sensing procedure
+            backoffCounter = 0;// reset the backoff counter
+            CSRequestMessage *csMsg = new CSRequestMessage;// start the carrier sensing procedure
             send(csMsg, "gateForTX$o");
             MACState = CS_WAITING;
-            break;
-        }
-        case TRANSMIT_START:
-        {
-            AppMessage *appMsg = new AppMessage(*macBuffer.front()); //extract the oldest message from buffer
-            MacMessage *mmsg = new MacMessage;
-            mmsg->encapsulate(appMsg);
-            TransmissionRequestMessage *trMsg = new TransmissionRequestMessage;
-            trMsg->encapsulate(mmsg);
-            send(trMsg, "gateForTX$o");
 
-            MACState = TRANSMIT_WAITING;
-            break;
         }
-        case TRANSMIT_OVER:
-        {
-            AppMessage *appMsg = macBuffer.front();
-            macBuffer.pop_front();
-            delete appMsg;
-            MACState = IDLE;
-            break;
-        }
-        case CS_WAITING:break;
-        case TRANSMIT_WAITING:break;
+        break;
+    }
+    case CS_RETRY:
+    {
+        CSRequestMessage *csMsg = new CSRequestMessage; // start the carrier sensing procedure
+        send(csMsg, "gateForTX$o");
+        MACState = CS_WAITING;
+        break;
+    }
+    case TRANSMIT_START:
+    {
+        AppMessage *appMsg = new AppMessage(*macBuffer.front()); //extract the oldest message from buffer
+        MacMessage *mmsg = new MacMessage;
+        mmsg->encapsulate(appMsg);
+        TransmissionRequestMessage *trMsg = new TransmissionRequestMessage;
+        trMsg->encapsulate(mmsg);
+        send(trMsg, "gateForTX$o");
+
+        MACState = TRANSMIT_WAITING;
+        break;
+    }
+    case TRANSMIT_OVER:
+    {
+        AppMessage *appMsg = macBuffer.front();
+        macBuffer.pop_front();
+        delete appMsg;
+        MACState = IDLE;
+        break;
+    }
+    case CS_WAITING:break;
+    case TRANSMIT_WAITING:break;
     }
 }

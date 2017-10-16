@@ -11,6 +11,7 @@ class PacketGenerator : public cSimpleModule
     public:
         PacketGenerator();
         ~PacketGenerator();
+        int numOfPacketsGenerated;
 
     protected:
         double iatDistribution;
@@ -19,6 +20,7 @@ class PacketGenerator : public cSimpleModule
         int seqno;
         int senderId;
 
+        virtual void finish();
         virtual void initialize();
         virtual void handleMessage(cMessage *msg);
         AppMessage *generateMessage();
@@ -33,8 +35,29 @@ PacketGenerator::~PacketGenerator()
 {
 }
 
+
+void PacketGenerator::finish()
+{
+    //#exp2
+    FILE * filePointerToWrite = fopen("PacketGeneratorDataNum.txt", "a");
+    if (filePointerToWrite == NULL) return;
+    int nodeXPosition = getParentModule()->par("nodeXPosition");
+    int nodeYPosition = getParentModule()->par("nodeYPosition");
+    int nodeIdentifier = getParentModule()->par("nodeIdentifier");
+
+    fprintf(filePointerToWrite, "TransceiverNode          NumOfPacketGeneratorPackets        Position(X.Y)\n");
+    fprintf(filePointerToWrite, "%d,                       %d,                           %d,%d\n",
+            nodeIdentifier, numOfPacketsGenerated, nodeXPosition, nodeYPosition);
+    fclose(filePointerToWrite);
+
+}
+
+
 void PacketGenerator::initialize()
 {
+    numOfPacketsGenerated = 0;
+
+
     iatDistribution = par("iatDistribution");
     messageSize = par("messageSize");
 
@@ -81,6 +104,8 @@ AppMessage *PacketGenerator::generateMessage()
     msg->setSenderId(senderId);
     msg->setSequenceNumber(sequenceNumber);
     msg->setMsgSize(msgSize);
+
+    numOfPacketsGenerated++;
 
     return msg;
 }

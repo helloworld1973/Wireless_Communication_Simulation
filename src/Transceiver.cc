@@ -27,7 +27,8 @@ class Transceiver : public cSimpleModule
 public:
     Transceiver();
     ~Transceiver();
-    int numOfPacketsTransmitted;
+    int numOfTxToChannelPackets;
+    int numOfLostInChannelPackets;
 
 protected:
     typedef enum
@@ -36,6 +37,7 @@ protected:
         TXState
     } TransceiverState_t;//finite state machine
 
+    virtual void finish();
     virtual void initialize();
     virtual void handleMessage(cMessage *msg);
     SignalStartMessage * updateCurrentTransmissions(SignalStopMessage *stopMsg);
@@ -65,22 +67,28 @@ Define_Module(Transceiver);
 
 Transceiver::Transceiver()
 {
-
 }
 
 Transceiver::~Transceiver()
 {
-    // FILE * filePointerToWrite = fopen("Data_Transmit.txt", "a");//Number of Packets transmitted VS number of Packets received
-    // if (filePointerToWrite == NULL) return;
-    // fprintf(filePointerToWrite, "TransceiverNode #         NumOfMessage Transmitted      Position(X.Y)\n");
-    // fprintf(filePointerToWrite, "%d,                       %d,                           %d,%d\n",
-    //         nodeIdentifier, numOfPacketsTransmitted, nodeXPosition, nodeYPosition);
-    // fclose(filePointerToWrite);
+}
+
+void Transceiver::finish()
+{
+    FILE * filePointerToWrite = fopen("TxToChannelDataNum.txt", "a");
+    if (filePointerToWrite == NULL) return;
+
+
+    fprintf(filePointerToWrite, "TransceiverNode          NumOfTxToChannelPackets           NumOfLostInChannelPackets           Position(X.Y)\n");
+    fprintf(filePointerToWrite, "%d,                       %d,                           %d,%d\n",
+            nodeIdentifier, numOfTxToChannelPackets,numOfLostInChannelPackets, nodeXPosition, nodeYPosition);
+    fclose(filePointerToWrite);
 }
 
 void Transceiver::initialize()
 {
-    numOfPacketsTransmitted = 0;//For experiment #1
+    numOfTxToChannelPackets = 0;
+    numOfLostInChannelPackets=0;
 
     txPowerDBm = par("txPowerDBm");
     bitRate = par("bitRate");
@@ -133,7 +141,8 @@ void Transceiver::handleMessage(cMessage *msg)
                 if ((*it)->getIdentifier() == startMsg->getIdentifier())
                 {
                     std::cout << "update SignalStartMessage to the CurrentTransmissions[] error !!!" << std::endl;
-                    delete msg; delete startMsg;
+                    delete startMsg;
+                    numOfLostInChannelPackets++;
                     return;
                 }
             }//check whether the extracted identifier equals to the identifier which in currentTransmission[]
@@ -160,12 +169,14 @@ void Transceiver::handleMessage(cMessage *msg)
 
         if(startMsg==NULL)
         {
+            numOfLostInChannelPackets++;
             return;
         }
 
         if (startMsg->getCollidedFlag())//the collided flag is true
         {
             delete startMsg;
+            numOfLostInChannelPackets++;
             return;//no further action
         }
         else
@@ -178,25 +189,21 @@ void Transceiver::handleMessage(cMessage *msg)
             double snr_n = pow(10, snr_db/10);// -> normal domain
             double bit_error_rate = erfc(sqrt(2 * snr_n));// calculate bit error rate
             int packet_length = 8 * static_cast<AppMessage *>(mpkt->getEncapsulatedPacket())->getMsgSize();//get packet length(1byte=8bits)
-            double packet_error_rate = 1 - pow((1 - bit_error_rate), packet_length);// calculate packet error rate(PER=1-(1-BER)^n)
+            double packet_error_rate = 1 - pow((1 - bit_error_rate), packet_length);// calculate packet error rate(PER=1-(1-BER)^n) PER=at least one bit is wrong
 
             srand(time(NULL));
             double u = (rand()%100)*0.01;//random num(0-1)( two numbers to the right of the decimal)
             if (u < packet_error_rate)
             {
-
                 delete mpkt;
+                numOfLostInChannelPackets++;
             }
             else
             {
                 TransmissionIndicationMessage * tiMsg = new TransmissionIndicationMessage;
                 tiMsg->encapsulate(mpkt);
                 send(tiMsg, "gateForMAC$o");//send encapsulated MacMessage to higher layer
-
-
             }
-
-
             return;
         }
     }
@@ -278,6 +285,7 @@ void Transceiver::handleMessage(cMessage *msg)
 
             // send the message to the channel
             send(startMsg, "gateForTXRXNode$o");
+            numOfTxToChannelPackets++;
 
             // wait for the end of the packet transmission
             scheduleAt(simTime() + packet_length / bitRate, new cMessage("STEP_3"));

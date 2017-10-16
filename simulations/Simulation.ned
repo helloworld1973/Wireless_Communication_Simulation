@@ -8,8 +8,8 @@ network Simulation
 		TransmitterNodeModule[numTransmitters] : TransmitterNode
 		{
 			nodeIdentifier = index;	
-			nodeXPosition = radius * cos(2 * 3.14159 * index / (numTransmitters));
-			nodeYPosition = radius * sin(2 * 3.14159 * index / (numTransmitters));
+			nodeXPosition = radius * cos(2 * 3.1416 * index / (numTransmitters));
+			nodeYPosition = radius * sin(2 * 3.1416 * index / (numTransmitters));
 			
 			@display("p=$nodeXPosition,$nodeYPosition");
 		};
