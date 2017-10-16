@@ -62,7 +62,7 @@ MAC::~MAC()
 
 void MAC::finish()
 {
-    //#exp2
+    //#exp
     FILE * filePointerToWrite = fopen("MacBuffferDropDataNum.txt", "a");
     if (filePointerToWrite == NULL) return;
 
